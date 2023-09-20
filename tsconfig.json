@@ -4,9 +4,12 @@
         "strict": true,
         "module": "NodeNext",
         "moduleResolution": "NodeNext",
-        "target": "ES2020",
+        "target": "ESNext",
         "sourceMap": true,
         "outDir": "dist"
+    },
+    "ts-node": {
+        "esm": true
     },
     "include": [
         "src/*"
