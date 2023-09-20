@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { load } from 'cheerio';
+import cheerio from 'cheerio';
 import { Anime, AnimeFull, AnimeRelations, AnimeSeason, AnimeStatus, AnimeType, parseDuration } from '../../../models/AnimeModels.js';
 import { AniError, AniErrorCode } from '../../../../aniutils/AniError.js';
 
@@ -8,7 +8,7 @@ export class ZoroInformer {
 
     static extractSearchInfo(element: cheerio.Element): Anime {
         let anime: Anime = new Anime();
-        let $ = load(element)
+        let $ = cheerio.load(element)
 
         let filmPoster = $(".film-poster");
         anime.id.zoroId = filmPoster.find("a").attr("data-id") ?
@@ -70,7 +70,7 @@ export class ZoroInformer {
 
             if (!response) return anime;
 
-            let $ = load(response.data);
+            let $ = cheerio.load(response.data);
             let content = $("#ani_detail .anis-content");
 
             anime.coverImage = content.find(".anisc-poster > .film-poster > img").attr("src") || '';
