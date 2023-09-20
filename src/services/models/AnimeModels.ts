@@ -12,6 +12,20 @@ export enum AnimePageState {
     ADDED
 }
 
+export function parseDuration(duration: string): number {
+    let value = 0
+    duration.split(" ").forEach((v) => {
+        if (v.includes('h')) {
+            value += parseInt(v.replace('h', '')) * 60
+        }
+        else if (v.includes('m')) {
+            value += parseInt(v.replace('m', ''))
+        }
+    })
+
+    return value
+}
+
 // -----------------------------
 //  Anime Properties
 // ------------------------------
@@ -37,7 +51,7 @@ export class AnimeSpotlight {
         public type: AnimeType = AnimeType.ALL,
         public rank: number = 0,
         public duration: number = 0,
-        public description: string | null = null
+        public description: string | null | undefined = null
     ) { }
 }
 
@@ -56,7 +70,7 @@ export class AnimeFull {
         public otherNames: string[] = [],
         public episodes: AnimeEpisode = new AnimeEpisode(),
         public relations: AnimeRelations[] = [],
-        public score: number | null = null,
+        public score: number | null | undefined = null,
         public isAdult: boolean = false,
         public duration: number = 0,
         public genres: string[] = []
@@ -72,7 +86,7 @@ export class AnimeId {
 }
 
 export class AnimeTitle {
-    constructor(public english: string | null = null, public userPreferred: string | null = null) { }
+    constructor(public english: string | null | undefined = null, public userPreferred: string | null | undefined = null) { }
 }
 
 export class AnimeEpisode {
@@ -83,18 +97,18 @@ export class AnimeEpisodeDetail {
     constructor(
         public id: number = 0,
         public episode: number = 0,
-        public title: string | null = null,
+        public title: string | null | undefined = null,
         public isFiller: boolean = false,
-        public url: string | null = null
+        public url: string | null | undefined = null
     ) { }
 }
 
 export class AnimeRelations {
-    constructor(public zoroId: number = 0, public image: string | null = null, public title: string | null = null) { }
+    constructor(public zoroId: number = 0, public image: string | null | undefined = null, public title: string | null | undefined = null) { }
 }
 
 export class AnimeServer {
-    constructor(public server: ZoroServers | null = null, public serverId: number = 0) { }
+    constructor(public server: ZoroServers | null | undefined = null, public serverId: number = 0) { }
 }
 
 export class AnimeEpisodeServers {
@@ -102,17 +116,17 @@ export class AnimeEpisodeServers {
 }
 
 export class AnimeSubtitle {
-    constructor(public lang: string | null = null, public url: string | null = null) { }
+    constructor(public lang: string | null | undefined = null, public url: string | null | undefined = null) { }
 }
 
 export class ZoroStreamData {
     constructor(
-        public videoUrl: string | null = null,
-        public introStart: number | null = null,
-        public introEnd: number | null = null,
-        public outroStart: number | null = null,
-        public outroEnd: number | null = null,
-        public subtitles: AnimeSubtitle[] | null = null
+        public videoUrl: string | null | undefined = null,
+        public introStart: number | null | undefined = null,
+        public introEnd: number | null | undefined = null,
+        public outroStart: number | null | undefined = null,
+        public outroEnd: number | null | undefined = null,
+        public subtitles: AnimeSubtitle[] | null | undefined = null
     ) { }
 }
 
@@ -186,4 +200,60 @@ export enum AnimeScore {
     VERY_GOOD = "very_good",
     GREAT = "great",
     MASTERPIECE = "masterpiece",
+}
+
+export enum AnimeTypeIndex {
+    ALL = 0,
+    TV = 1,
+    MOVIE = 2,
+    OVA = 3,
+    ONA = 4,
+    SPECIAL = 5,
+    MUSIC = 6,
+}
+
+export enum AnimeStatusIndex {
+    ALL = 0,
+    FINISHED = 1,
+    AIRING = 2,
+    NOT_YET_RELEASED = 3,
+}
+
+export enum AnimeSeasonIndex {
+    ALL = 0,
+    SPRING = 1,
+    SUMMER = 2,
+    FALL = 3,
+    WINTER = 4,
+}
+
+export enum AnimeVoiceTrackIndex {
+    SUB = 1,
+    DUB = 2,
+    BOTH = 3,
+    ALL = 0,
+}
+
+export enum AnimeSortIndex {
+    DEFAULT = 0,
+    RECENTLY_ADDED = 1,
+    RECENTLY_UPDATED = 2,
+    SCORE = 3,
+    NAME = 4,
+    RELEASED_DATE = 5,
+    MOST_WATCHED = 6,
+}
+
+export enum AnimeScoreIndex {
+    ALL = 0,
+    APPEALING = 1,
+    HORRIBLE = 2,
+    VERY_BAD = 3,
+    BAD = 4,
+    AVERAGE = 5,
+    FINE = 6,
+    GOOD = 7,
+    VERY_GOOD = 8,
+    GREAT = 9,
+    MASTERPIECE = 10,
 }
