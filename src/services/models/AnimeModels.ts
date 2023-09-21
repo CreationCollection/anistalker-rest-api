@@ -1,8 +1,8 @@
 export interface IAnimePage {
     hasNextPage(): boolean;
     next(): Promise<Anime[]>;
-    get(index: number): Anime;
-    getAll(): readonly Anime[];
+    get(): readonly Anime[];
+    setPage(page: number): IAnimePage;
     size(): number;
     onStateChange(listener: (state: AnimePageState, value1: number, value2: number) => void): void;
 }

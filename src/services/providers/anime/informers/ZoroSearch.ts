@@ -54,8 +54,8 @@ export class ZoroSearch {
 export class AnimePage implements IAnimePage {
     private animeList: Anime[] = [];
     private stateListener: ((state: AnimePageState, value1: number, value2: number) => void) | null = null;
-    private currentPage: number = 0;
-    private lastPage: number = 0;
+    private currentPage: number = 1;
+    private lastPage: number = 1;
 
     constructor(private url: string) {
         this.url = url;
@@ -68,7 +68,7 @@ export class AnimePage implements IAnimePage {
     async next(): Promise<Anime[]> {
         return new Promise(async (resolve, reject) => {
             if (this.stateListener)
-                this.stateListener(AnimePageState.LOADING, ++this.currentPage, this.lastPage);
+                this.stateListener(AnimePageState.LOADING, this.currentPage, this.lastPage);
 
             let pageUrl = this.url.replace("@page", this.currentPage.toString())
             let page: AxiosResponse = await axios.get(pageUrl, { responseType: 'text' })
@@ -81,6 +81,8 @@ export class AnimePage implements IAnimePage {
                 reject(AniError.build(AniErrorCode.UNKNOWN))
                 return
             }
+
+            this.currentPage++
 
             let $ = load(page.data);
             let content = $('.film_list .film_list-wrap .flw-item').map((index, element) => {
@@ -113,11 +115,12 @@ export class AnimePage implements IAnimePage {
         })
     }
 
-    get(index: number): Anime {
-        return this.animeList[index];
+    setPage(page: number): IAnimePage {
+        this.currentPage = page
+        return this
     }
 
-    getAll(): Anime[] {
+    get(): Anime[] {
         return this.animeList;
     }
 
