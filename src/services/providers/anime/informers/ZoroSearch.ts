@@ -115,6 +115,10 @@ export class AnimePage implements IAnimePage {
         })
     }
 
+    getLastPage(): number {
+        return this.lastPage
+    }
+
     setPage(page: number): IAnimePage {
         this.currentPage = page
         return this
