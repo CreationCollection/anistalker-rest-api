@@ -50,9 +50,11 @@ export const search = async (req: Request, res: Response) => {
     let keyword = req.params.query
     if (keyword) {
         let query = createFilter(req.query)
-        safeExecute (async () => {
-            let data = await MasterZoro.search(keyword, query).next()
-            res.json({ status: 200, data })
+        safeExecute(async () => {
+            let page = req.query.page && typeof req.query.page == "string" ? parseInt(req.query.page) : 1
+            let animePage = MasterZoro.search(keyword, query)
+            let data = await animePage.setPage(page).next()
+            res.json({ status: 200, page, total: data.length, lastPage: animePage.getLastPage(), data })
         }, res)
     }
     else {
@@ -68,8 +70,10 @@ export const search = async (req: Request, res: Response) => {
 
 export const filter = async (req: Request, res: Response) => {
     let query = createFilter(req.query)
-    safeExecute (async () => {
-        let data = await MasterZoro.filter(query).next()
-        res.json({ status: 200, data })
+    safeExecute(async () => {
+        let page = req.query.page && typeof req.query.page == "string" ? parseInt(req.query.page) : 1
+        let animePage = MasterZoro.filter(query)
+        let data = await animePage.setPage(page).next()
+        res.json({ status: 200, page, total: data.length, lastPage: animePage.getLastPage(), data })
     }, res)
 }
