@@ -101,7 +101,7 @@ export class AnimePage implements IAnimePage {
                                     ?.split('=').pop()
                     this.lastPage = pageIndex ? parseInt(pageIndex) : 1
                 } else {
-                    this.lastPage = 1;
+                    this.lastPage = this.currentPage - 1;
                 }
             }
 
