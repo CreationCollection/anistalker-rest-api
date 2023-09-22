@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 import { load } from 'cheerio';
 
 import { IAnimePage, AnimePageState, Anime, AnimeSortIndex, AnimeTypeIndex, AnimeStatusIndex, AnimeScoreIndex, AnimeSeasonIndex, AnimeVoiceTrackIndex } from '../../../models/AnimeModels.js'
@@ -66,49 +66,60 @@ export class AnimePage implements IAnimePage {
     }
 
     async next(): Promise<Anime[]> {
-        return new Promise(async (resolve, reject) => {
-            if (this.stateListener)
-                this.stateListener(AnimePageState.LOADING, this.currentPage, this.lastPage);
+        if (this.stateListener)
+            this.stateListener(AnimePageState.LOADING, this.currentPage, this.lastPage);
 
-            let pageUrl = this.url.replace("@page", this.currentPage.toString())
-            let page: AxiosResponse = await axios.get(pageUrl, { responseType: 'text' })
+        let pageUrl = this.url.replace("@page", this.currentPage.toString())
+        let page: AxiosResponse | null = null
 
-            if (page.status == 404) {
-                reject(AniError.buildWithMessage(AniErrorCode.NOT_FOUND, "Zoro Anime Page Not Found at $url"))
-                return
+        try {
+            page = await axios.get(pageUrl, { responseType: 'text' })
+        }
+        catch (err: any) {
+            if (err instanceof AxiosError) {
+                throw new Error(err.message)
             }
-            else if (page.status / 100 != 2) {
-                reject(AniError.build(AniErrorCode.UNKNOWN))
-                return
+            else {
+                throw new Error(err.message)
             }
+        }
 
-            this.currentPage++
+        if (page == null) throw new Error("Unknow Error, Page is null")
+        if (page.status == 404) {
+            throw AniError.buildWithMessage(AniErrorCode.NOT_FOUND, "Zoro Anime Page Not Found at $url")
+        }
+        else if (page.status / 100 != 2) {
+            throw AniError.build(AniErrorCode.UNKNOWN)
+        }
 
-            let $ = load(page.data);
-            let content = $('.film_list .film_list-wrap .flw-item').map((index, element) => {
-                return ZoroInformer.extractSearchInfo(element)
-            }).get();
 
-            let pItem = $('.pre-pagination');
-            if (pItem.length === 0) {
-                this.lastPage = 1;
-            } else {
-                let link = pItem.find('.pagination .page-item').last().find('a')
-                let pageIndex = link.attr('href')?.split('?')?.pop()
-                    ?.split('&')
-                    ?.find(x => x.includes('page'))
-                    ?.split('=')?.pop()
-                this.lastPage = parseInt(pageIndex ?? link.text() ?? '0')
-            }
+        this.currentPage++
 
-            let offset = this.size()
-            let length = content.length
+        let $ = load(page.data);
+        let content = $('.film_list .film_list-wrap .flw-item').map((index, element) => {
+            return ZoroInformer.extractSearchInfo(element)
+        }).get();
 
-            this.animeList.push(...content)
-            if (this.stateListener)
-                this.stateListener(AnimePageState.ADDED, offset, length);
-            resolve(content)
-        })
+        let pItem = $('.pre-pagination');
+        if (pItem.length === 0) {
+            this.lastPage = 1;
+        } else {
+            let link = pItem.find('.pagination .page-item').last().find('a')
+            let pageIndex = link.attr('href')?.split('?')?.pop()
+                ?.split('&')
+                ?.find(x => x.includes('page'))
+                ?.split('=')?.pop()
+            this.lastPage = parseInt(pageIndex ?? link.text() ?? '0')
+        }
+
+        let offset = this.size()
+        let length = content.length
+
+        this.animeList.push(...content)
+        if (this.stateListener)
+            this.stateListener(AnimePageState.ADDED, offset, length);
+
+        return content
     }
 
     getLastPage(): number {
