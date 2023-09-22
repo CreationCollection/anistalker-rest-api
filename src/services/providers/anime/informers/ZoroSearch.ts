@@ -13,7 +13,7 @@ export class ZoroFilter {
     score: AnimeScoreIndex = AnimeScoreIndex.ALL;
     season: AnimeSeasonIndex = AnimeSeasonIndex.ALL;
     language: AnimeVoiceTrackIndex = AnimeVoiceTrackIndex.ALL;
-    genres: string[] | null= null;
+    genres: string[] | null = null;
 }
 
 export class ZoroSearch {
@@ -39,11 +39,11 @@ export class ZoroSearch {
     }
 
     static getAnimeByGenre(genre: string): IAnimePage {
-        return this.getAnimePage(`https://aniwatch.to/genre/${genre}`);
+        return this.getAnimePage(`https://aniwatch.to/genre/${genre}?page=@page`);
     }
 
     static getAnimeByCategory(category: string): IAnimePage {
-        return this.getAnimePage(`https://aniwatch.to/${category}`);
+        return this.getAnimePage(`https://aniwatch.to/${category}?page=@page`);
     }
 
     static getAnimePage(url: string): IAnimePage {
@@ -93,16 +93,12 @@ export class AnimePage implements IAnimePage {
             if (pItem.length === 0) {
                 this.lastPage = 1;
             } else {
-                let link = pItem.find('.pagination .page-item').last().find('a').attr('href')
-                if (link) {
-                    let pageIndex = link.split('?').pop()
-                                    ?.split('&')
-                                    .find(x => x.includes('page'))
-                                    ?.split('=').pop()
-                    this.lastPage = pageIndex ? parseInt(pageIndex) : 1
-                } else {
-                    this.lastPage = this.currentPage - 1;
-                }
+                let link = pItem.find('.pagination .page-item').last().find('a')
+                let pageIndex = link.attr('href')?.split('?')?.pop()
+                    ?.split('&')
+                    ?.find(x => x.includes('page'))
+                    ?.split('=')?.pop()
+                this.lastPage = parseInt(pageIndex ?? link.text() ?? '0')
             }
 
             let offset = this.size()
