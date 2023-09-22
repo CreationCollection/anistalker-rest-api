@@ -6,48 +6,48 @@ import { load } from "cheerio"
 
 export class ZoroSpotlight {
     static async getSpotlightAnime(): Promise<AnimeSpotlight[]> {
-        return new Promise(async (resolve, reject) => {
-            let animelist: AnimeSpotlight[] = []
+        let animelist: AnimeSpotlight[] = []
+        try {
+            let result: AxiosResponse | null = null
             try {
-                let result: AxiosResponse | null = null
-                try {
-                    result = await axios.get("https://aniwatch.to/home", { responseType: "text" })
-                }
-                catch (err) {
-                    if (err instanceof AxiosError) {
-                        if (err.response?.status == 404) {
-                            throw AniError.buildWithMessage(AniErrorCode.NOT_FOUND, "Page not found")
-                        } else if (Math.floor(err.response?.status ? err.response.status : 1 / 100) !== 2) {
-                            throw AniError.build(AniErrorCode.UNKNOWN)
-                        }
+                result = await axios.get("https://aniwatch.to/home", { responseType: "text" })
+            }
+            catch (err) {
+                if (err instanceof AxiosError) {
+                    if (err.response?.status == 404) {
+                        throw AniError.buildWithMessage(AniErrorCode.NOT_FOUND, "Page not found")
+                    } else if (Math.floor(err.response?.status ? err.response.status : 1 / 100) !== 2) {
+                        throw AniError.build(AniErrorCode.UNKNOWN)
                     }
                 }
+            }
 
-                if (!result) return animelist
+            if (!result) return animelist
 
-                let $ = load(result.data)
-                $("#slider .swiper-wrapper .swiper-slide .deslide-item").each((_, item) => {
-                    let anime = new AnimeSpotlight()
+            let $ = load(result.data)
+            $("#slider .swiper-wrapper .swiper-slide .deslide-item").each((_, item) => {
+                let anime = new AnimeSpotlight()
 
-                    anime.image = $(item).find('.deslide-cover img').attr('data-src') || ''
-                    let content = $(item).find('.deslide-item-content')
+                anime.image = $(item).find('.deslide-cover img').attr('data-src') || ''
+                let content = $(item).find('.deslide-item-content')
 
-                    anime.rank = parseInt(content.find('.desi-sub-text').text()
-                        .split(' ')[0].replace('#', ''))
+                anime.rank = parseInt(content.find('.desi-sub-text').text()
+                    .split(' ')[0].replace('#', ''))
 
-                    let head = content.find('.desi-head-title')
-                    anime.title.english = head.text()
-                    anime.title.userPreferred = head.attr('data-jname')
+                let head = content.find('.desi-head-title')
+                anime.title.english = head.text()
+                anime.title.userPreferred = head.attr('data-jname')
 
-                    let type = content.find('.sc-detail .scd-item:nth-child(0)').text()
-                    anime.type = 
-                        Object.entries(AnimeType)
+                let type = content.find('.sc-detail .scd-item:nth-child(0)').text()
+                anime.type =
+                    Object.entries(AnimeType)
                         .find(([_, val]) => val.toLowerCase() == type.toLowerCase())?.[1]
-                        || AnimeType.TV
+                    || AnimeType.TV
 
-                    anime.duration = parseDuration(content.find('.sc-detail .scd-item:nth-child(1)').text())
+                let items = content.find('.sc-detail .scd-item')
+                anime.duration = parseDuration($(items.get(1)).text())
 
-                    content.find('.sc-detail .scd-item:nth-child(4) .tick > .tick-item')
+                $(items.get(4)).find('.tick > .tick-item')
                     .each((_, val) => {
                         if ($(val).attr('class')?.includes('tick-sub')) {
                             anime.episodes.sub = parseInt($(val).text())
@@ -60,20 +60,19 @@ export class ZoroSpotlight {
                         }
                     })
 
-                    anime.description = content.find('.desi-description').text()
+                anime.description = content.find('.desi-description').text().trim()
 
-                    animelist.push(anime)
-                })
+                animelist.push(anime)
+            })
+        }
+        catch (error) {
+            if (error instanceof Error) {
+                throw new AniError(AniErrorCode.UNKNOWN, "Unknow Error", error)
             }
-            catch (error) {
-                if (error instanceof Error) {
-                    reject(new AniError(AniErrorCode.UNKNOWN, "Unknow Error", error))
-                }
-                else {
-                    console.log(error)
-                }
+            else {
+                console.log(error)
             }
-            return animelist
-        })
+        }
+        return animelist
     }
 }
