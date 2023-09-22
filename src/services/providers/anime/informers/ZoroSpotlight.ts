@@ -31,6 +31,10 @@ export class ZoroSpotlight {
                 anime.image = $(item).find('.deslide-cover img').attr('data-src') || ''
                 let content = $(item).find('.deslide-item-content')
 
+                anime.id = parseInt(
+                    $(content.find('.desi-buttons > a').get(0)).attr('href')?.split('-')?.pop() 
+                    || '0')
+
                 anime.rank = parseInt(content.find('.desi-sub-text').text()
                     .split(' ')[0].replace('#', ''))
 
