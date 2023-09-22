@@ -80,13 +80,15 @@ export const filter = async (req: Request, res: Response) => {
 
 export const searchByCatagory = async (req: Request, res: Response) => {
     let categoryString = req.params.category
-    let category = 
-        Object.entries(AnimeCategory).find(([_, val]) => val.toLowerCase() == categoryString.toLowerCase())
-        ?.[1] as AnimeCategory
+    let category =
+        categoryString ?
+            (Object.entries(AnimeCategory).find(([_, val]) => val.toLowerCase() == categoryString.toLowerCase())
+                ?.[1] as AnimeCategory)
+            : null
     if (category) {
         safeExecute(async () => {
             let page = req.query.page && typeof req.query.page == "string" ? parseInt(req.query.page) : 1
-            let animePage = MasterZoro.getAnimeByCategory(category)
+            let animePage = MasterZoro.getAnimeByCategory(category!)
             let data = await animePage.setPage(page).next()
             res.json({ status: 200, page, total: data.length, lastPage: animePage.getLastPage(), data })
         }, res)

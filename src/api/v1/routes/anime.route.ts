@@ -27,6 +27,8 @@ route.get('/filter', controller.filter)
 
 route.get('/category/:category', controller.searchByCatagory)
 
+route.get('/category', controller.searchByCatagory)
+
 route.get('/genre/:genre', controller.searchByGenre)
 
 route.get('/spotlight', controller.getSpotlightAnime)

@@ -1,19 +1,23 @@
 import { Response } from "express"
 
-export function safeExecute(exec: () => void, res: Response) {
+export async function safeExecute(exec: () => Promise<any>, res: Response) {
     try {
-        exec()
+        console.log("executing")
+        await exec()
     }
-    catch (err) {
+    catch (err: any) {
         if (err instanceof Error) {
-            res.statusCode = 501
-            res.statusMessage = err.message
-            res.json({
+            res.status(501).json({
                 status: 501,
                 data: {},
-                error: [err.message],
-                stack: err.stack
-            })
+                error: [err.message]
+            });
+        } else {
+            res.status(500).json({
+                status: 500,
+                data: {},
+                error: ["Internal Server Error"],
+            });
         }
     }
 }
