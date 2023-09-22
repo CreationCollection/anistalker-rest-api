@@ -25,6 +25,12 @@ route.get('/search/:query', controller.search)
 
 route.get('/filter', controller.filter)
 
+route.get('/category/:category', controller.searchByCatagory)
+
+route.get('/genre/:genre', controller.searchByGenre)
+
+route.get('/spotlight', controller.getSpotlightAnime)
+
 route.get('/:animeId', controller.animeInfo)
 
 route.get('/:animeId/episodes', controller.animeEpisodes)
