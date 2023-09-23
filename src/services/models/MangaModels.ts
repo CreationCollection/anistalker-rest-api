@@ -23,8 +23,8 @@ export class Manga {
 export class MangaChapter {
     constructor(
         public id: string | null = null,
-        public volume: string | null = null,
-        public chapter: string | null = null,
+        public volume: number | null = null,
+        public chapter: number | null = null,
         public title: string = "",
         public pages: number = 0,
         public published: MangaDate | null = null,

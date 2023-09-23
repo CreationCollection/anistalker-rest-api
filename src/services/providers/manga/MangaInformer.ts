@@ -34,7 +34,7 @@ export function extractMangaData(data: any): Manga | null {
         if (r.type == 'manga') {
             manga.relation.push(new MangaRelation(r.related, r.id))
         }
-        else if (r.type == 'cover') {
+        else if (r.type == 'cover_art') {
             manga.coverId = r.id
         }
     });
@@ -53,8 +53,8 @@ export function extractChapterData(data: any): MangaChapter[] {
 
         let attr =d.attributes
 
-        chapter.chapter = attr.chapter
-        chapter.volume = attr.volume
+        chapter.chapter = parseFloat(attr.chapter)
+        chapter.volume = parseFloat(attr.volume)
         chapter.title = attr.title
         chapter.pages = attr.pages
         chapter.published = MangaDate.extractDate(attr.publishAt)
@@ -63,7 +63,26 @@ export function extractChapterData(data: any): MangaChapter[] {
         list.push(chapter)
     });
 
-    list.sort((a, b) => parseFloat(b.chapter ?? b.volume ?? "0") - parseFloat(a.chapter ?? a.volume ?? "0"))
+    list.sort((a, b) => (b.chapter ?? b.volume ?? 0) - (a.chapter ?? a.volume ?? 0))
+
+    return list
+}
+
+export function extractAggregateChapterData(data: any): MangaChapter[] {
+    if (data == null) return []
+    let list: MangaChapter[] = []
+
+    Object.values(data.volumes).forEach((v: any) => {
+        
+        Object.values(v.chapters).forEach((c: any) => {
+            let chapter = new MangaChapter()
+            chapter.volume = parseFloat(v.volume)
+            chapter.chapter = parseFloat(c.chapter)
+            chapter.id = c.id
+            list.push(chapter)
+        })
+
+    })
 
     return list
 }
@@ -73,9 +92,9 @@ export function extractPanelUrl(data: any, low: boolean = false): string[] {
 
     if (!data) return list
 
-    let baseUrl = `${data.baseUrl}/${ low ? "dataSaver" : "data" }/${ data.chapter.hash }/`;
+    let baseUrl = `${data.baseUrl}/${ low ? "data-saver" : "data" }/${ data.chapter.hash }/`;
 
-    (low ? data.chapter.dataSaver : data.chaper.data).forEach((l: string) => {
+    (low ? data.chapter.dataSaver : data.chapter.data).forEach((l: string) => {
         list.push(baseUrl + l)
     });
 
