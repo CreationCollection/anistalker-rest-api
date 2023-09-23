@@ -2,7 +2,6 @@ import { Response } from "express"
 
 export async function safeExecute(exec: () => Promise<any>, res: Response) {
     try {
-        console.log("executing")
         await exec()
     }
     catch (err: any) {
