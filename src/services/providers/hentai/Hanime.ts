@@ -84,10 +84,11 @@ const extractStreams = (items: any): HentaiStream[] => {
 }
 
 
-const getTrending = async (time: 'day' | 'week' | 'month' = 'day', page: number = 1): Promise<Hentai[]> => {
+const getTrending = async (time: 'day' | 'week' | 'month' = 'day', page: number = 1)
+    : Promise<{ videos: Hentai[], lastPage: number }> => {
     let url = `https://hanime.tv/api/v8/browse-trending?time=${time}&page=${page}&order_by=views&ordering=desc`;
     const data = await fetch(url);
-    return extractHentaiVideos(data.hentai_videos)
+    return { videos: extractHentaiVideos(data.hentai_videos), lastPage: data.number_of_pages}
 }
 
 const getRandom = async (): Promise<Hentai[]> => {
@@ -99,14 +100,14 @@ const getRandom = async (): Promise<Hentai[]> => {
 
 const getTags = async (): Promise<HentaiTag[]> => {
     let data = await fetch('https://hanime.tv/api/v8/browse');
-    let list: HentaiTag[] = []
     return extractTags(data.hentai_tags)
 }
 
-const getVideoByCategory = async (category: string, page: number = 1): Promise<Hentai[]> => {
+const getVideoByCategory = async (category: string, page: number = 1)
+    : Promise<{ videos: Hentai[], lastPage: number}> => {
     let url = `https://hanime.tv/api/v8/browse/hentai-tags/${category}?page=${page}&order_by=views&ordering=desc`
     let data = await fetch(url);
-    return extractHentaiVideos(data.hentai_videos)
+    return { videos: extractHentaiVideos(data.hentai_videos), lastPage: data.number_of_pages }
 }
 
 const getVideo = async (slug: string): Promise<HentaiVideo> => {
