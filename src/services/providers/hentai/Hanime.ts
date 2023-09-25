@@ -1,18 +1,16 @@
 import axios from "axios";
 import crypto from 'crypto'
-import UserAgent from 'fake-useragent'
 import { Parser } from "m3u8-parser";
 
 import { Hentai, HentaiDate, HentaiStream, HentaiTag, HentaiVideo } from "../../models/HentaiModels.js"
-import { VideoFile, VideoSegment } from "../../models/VideoModels.js";
-import { parse } from "path";
+import { VideoSegment } from "../../models/VideoModels.js";
 
 const fetch = async (url: string): Promise<any> => {
     try {
         const headers = {
             'X-Signature-Version': 'web2',
             'X-Signature': crypto.randomBytes(32).toString('hex'),
-            'User-Agent': new UserAgent().random,
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
         };
         const res = await axios.get(url, { headers });
         return res.data;
@@ -26,7 +24,7 @@ const post = async (url: string, body: any): Promise<any> => {
         const headers = {
             'X-Signature-Version': 'web2',
             'X-Signature': crypto.randomBytes(32).toString('hex'),
-            'User-Agent': new UserAgent().random,
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
         };
         const res = await axios.post(url, body, { headers });
         return res.data;

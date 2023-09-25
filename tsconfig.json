@@ -10,6 +10,9 @@
         "outDir": "dist",
         "baseUrl": "./",
         "paths": {
+            "cheerio": [
+                "./node_modules/cheerio/lib/index.d.ts"
+            ],
             "*": [
                 "*",
                 "src/types/*"
