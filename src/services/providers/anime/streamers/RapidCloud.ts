@@ -114,8 +114,8 @@ export class RapidCloud {
             
             let file: VideoFile
             
-            if (res.height > 1000) file = hd
-            else if (res.height > 700) file = uhd
+            if (res.height > 1000) file = uhd
+            else if (res.height > 700) file = hd
             else continue
             
             file.url = url
