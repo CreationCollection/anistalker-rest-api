@@ -46,8 +46,9 @@ const getVideoByCategory = async (req: Request, res: Response) => {
 
 const getVideo = async (req: Request, res: Response) => {
     let slug = req.params.slug
+    let seperateFiles = req.query.sf == 'true'
     safeExecute(async () => {
-        let data = await hentai.getVideo(slug)
+        let data = await hentai.getVideo(slug, seperateFiles)
         res.json({ status: 200, data })
     }, res)
 }

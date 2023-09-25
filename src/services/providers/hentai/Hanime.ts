@@ -1,8 +1,11 @@
 import axios from "axios";
 import crypto from 'crypto'
 import UserAgent from 'fake-useragent'
+import { Parser } from "m3u8-parser";
 
 import { Hentai, HentaiDate, HentaiStream, HentaiTag, HentaiVideo } from "../../models/HentaiModels.js"
+import { VideoFile, VideoSegment } from "../../models/VideoModels.js";
+import { parse } from "path";
 
 const fetch = async (url: string): Promise<any> => {
     try {
@@ -78,24 +81,56 @@ const extractTags = (items: any): HentaiTag[] => {
     return list
 }
 
-const extractStreams = (items: any): HentaiStream[] => {
-    let list: HentaiStream[] = []
+const extractStreams = async (items: any, s: boolean = false)
+        : Promise<{ hd: HentaiStream | string, uhd: HentaiStream | string }> => {
+    let hd: HentaiStream | string = new HentaiStream()
+    let uhd: HentaiStream | string = new HentaiStream()
 
     for (let item of items) {
         if (item.is_guest_allowed) {
-            let hentai = new HentaiStream()
-            hentai.width = item.width
-            hentai.height = item.height
-            hentai.duration = item.duration / 1000
-            hentai.filesize = item.filesize
-            hentai.filename = item.filename
-            hentai.url = item.url
-            list.push(hentai)
+            let file: HentaiStream
+
+            if (parseInt(item.height) > 700) {
+                if (!s) {
+                    uhd = item.url
+                    continue
+                }
+                file = uhd as HentaiStream
+            }
+            else if (parseInt(item.height) > 400) {
+                if (!s) {
+                    hd = item.url
+                    continue
+                }
+                file = hd as HentaiStream
+            }
+            else continue
+
+            let { data } = await axios.get(item.url)
+            let parser = new Parser()
+            parser.push(data)
+            parser.end()
+
+            let key = parser.manifest.segments[0].key
+            file.key = await (await axios.get(key.uri)).data
+            file.method = key.method
+
+            let start = 0
+            parser.manifest.segments.forEach(seg => {
+                file.files.push(new VideoSegment(seg.duration, start, seg.uri))
+                start += seg.duration
+            });
+            file.duration = start
         }
     }
 
-    return list
+    return { hd, uhd }
 }
+
+// const formatVideo = async (master: string): Promise<VideoFile> => {
+
+    
+// }
 
 const search = async (keyword: string, page: number = 1)
     : Promise<{ videos: Hentai[], lastPage: number, total: number}> => {
@@ -140,7 +175,7 @@ const getVideoByCategory = async (category: string, page: number = 1)
     return { videos: extractHentaiVideos(data.hentai_videos), lastPage: data.number_of_pages }
 }
 
-const getVideo = async (slug: string): Promise<HentaiVideo> => {
+const getVideo = async (slug: string, seperateFiles: boolean = false): Promise<HentaiVideo> => {
     let url = `https://hanime.tv/api/v8/video?id=${slug}`
     let data = await fetch(url);
 
@@ -151,7 +186,7 @@ const getVideo = async (slug: string): Promise<HentaiVideo> => {
     video.random_video = extractHentai(data.next_random_hentai_video)
     video.tags = extractTags(data.hentai_tags)
     video.related = extractHentaiVideos(data.hentai_franchise_hentai_videos)
-    video.video_streams = extractStreams(data.videos_manifest.servers[0].streams)
+    video.video_streams = await extractStreams(data.videos_manifest.servers[0].streams, seperateFiles)
 
     return video
 }

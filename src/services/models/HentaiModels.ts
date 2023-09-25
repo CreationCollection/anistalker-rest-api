@@ -1,3 +1,4 @@
+import { VideoSegment } from "./VideoModels.js"
 
 
 export class HentaiTag {
@@ -25,12 +26,10 @@ export class Hentai {
 
 export class HentaiStream {
     constructor(
-        public width: number = 0,
-        public height: number = 0,
+        public key: string = '',
+        public method: string = 'AES-128',
         public duration: number = 0,
-        public filesize: number = 0,
-        public filename: string = '',
-        public url: string = '',
+        public files: VideoSegment[] = []
     ) { }
 }
 
@@ -42,7 +41,7 @@ export class HentaiVideo {
         public tags: HentaiTag[] = [],
         public next_video: Hentai = new Hentai(),
         public random_video: Hentai = new Hentai(),
-        public video_streams: HentaiStream[] = [],
+        public video_streams: { hd: HentaiStream | string, uhd: HentaiStream | string } = { hd: '', uhd: '' },
     ) { }
 }
 
