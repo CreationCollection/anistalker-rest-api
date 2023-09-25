@@ -16,5 +16,5 @@ export class MasterZoro {
 
     static getEpisodes = async (animeId: number): Promise<AnimeEpisodeDetail[]> => ZoroStream.getEpisodes(animeId)
     static getEpisodeServers = async (episodeId: number): Promise<AnimeEpisodeServers> => ZoroStream.getServersForEpisode(episodeId)
-    static getEpisodeVideo = async (episodeServerId: number): Promise<ZoroStreamData> => ZoroStream.getVideoData(episodeServerId)
+    static getEpisodeVideo = async (episodeServerId: number, seperateFiles: boolean = false): Promise<ZoroStreamData> => ZoroStream.getVideoData(episodeServerId, seperateFiles)
 }

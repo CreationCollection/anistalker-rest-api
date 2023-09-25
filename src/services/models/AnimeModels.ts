@@ -1,3 +1,5 @@
+import { Video } from "./VideoModels.js";
+
 export interface IAnimePage {
     hasNextPage(): boolean;
     next(): Promise<Anime[]>;
@@ -122,12 +124,12 @@ export class AnimeSubtitle {
 
 export class ZoroStreamData {
     constructor(
-        public videoUrl: string | null | undefined = null,
-        public introStart: number | null | undefined = null,
-        public introEnd: number | null | undefined = null,
-        public outroStart: number | null | undefined = null,
-        public outroEnd: number | null | undefined = null,
-        public subtitles: AnimeSubtitle[] | null | undefined = null
+        public video: Video | null = null,
+        public introStart: number | null = null,
+        public introEnd: number | null = null,
+        public outroStart: number | null = null,
+        public outroEnd: number | null = null,
+        public subtitles: AnimeSubtitle[] | null = null
     ) { }
 }
 

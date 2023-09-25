@@ -56,12 +56,13 @@ export const animeEpisodeServers = async (req: Request, res: Response) => {
     }
 }
 
-// /episode/:epId/video?server&track
+// /episode/:epId/video?server&track&seperatedFiles=true
 export const animeEpisodeVideo = async (req: Request, res: Response) => {
     let epId = req.params.epId
     if (checkId(epId, res, IllEpisodeIdMsg)) {
         safeExecute(async () => {
 
+            let seperatedFiles = typeof req.query.sf == 'string' && req.query.sf == 'true'
             let servers = await MasterZoro.getEpisodeServers(parseInt(epId))
             let server = req.query.track && req.query.track.toString() == 'dub' ? servers.dub : servers.sub
             let qServer = req.query.server?.toString()
@@ -69,12 +70,12 @@ export const animeEpisodeVideo = async (req: Request, res: Response) => {
                 server.findIndex((val, _) => val.server?.toLowerCase() == qServer) : 0
 
             if (server.length > 0 && sIndex >= 0 && sIndex < server.length) {
-                let data = await MasterZoro.getEpisodeVideo(server[sIndex].serverId)
+                let data = await MasterZoro.getEpisodeVideo(server[sIndex].serverId, seperatedFiles)
                 res.json({
                     status: 200, data: {
                         server: { title: server[sIndex].server, id: server[sIndex].serverId },
                         track: server == servers.dub ? "dub" : "sub",
-                        video: data.videoUrl,
+                        video: data.video,
                         subtitles: data.subtitles,
                         intro: { start: data.introStart, end: data.introEnd },
                         outro: { start: data.outroStart, end: data.outroEnd }

@@ -89,7 +89,7 @@ export class ZoroStream {
         return result?.data.link
     }
 
-    static getVideoData = async (serverid: number): Promise<ZoroStreamData> => {
-        return RapidCloud.extract(await this.getServerUrl(serverid))
+    static getVideoData = async (serverid: number, seperateFiles: boolean = false): Promise<ZoroStreamData> => {
+        return RapidCloud.extract(await this.getServerUrl(serverid), seperateFiles)
     }
 }
