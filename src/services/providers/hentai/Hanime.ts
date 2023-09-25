@@ -80,9 +80,11 @@ const extractTags = (items: any): HentaiTag[] => {
 }
 
 const extractStreams = async (items: any, s: boolean = false)
-        : Promise<{ hd: HentaiStream | string, uhd: HentaiStream | string }> => {
+    : Promise<{ hd: HentaiStream | string, uhd: HentaiStream | string }> => {
     let hd: HentaiStream | string = new HentaiStream()
     let uhd: HentaiStream | string = new HentaiStream()
+
+    let promises: (() => Promise<any>)[] = []
 
     for (let item of items) {
         if (item.is_guest_allowed) {
@@ -104,34 +106,38 @@ const extractStreams = async (items: any, s: boolean = false)
             }
             else continue
 
-            let { data } = await axios.get(item.url)
-            let parser = new Parser()
-            parser.push(data)
-            parser.end()
+            promises.push(async () => {
+                let { data } = await axios.get(item.url)
+                let parser = new Parser()
+                parser.push(data)
+                parser.end()
 
-            let key = parser.manifest.segments[0].key
-            file.key = await (await axios.get(key.uri)).data
-            file.method = key.method
+                let key = parser.manifest.segments[0].key
+                file.key = await (await axios.get(key.uri)).data
+                file.method = key.method
 
-            let start = 0
-            parser.manifest.segments.forEach(seg => {
-                file.files.push(new VideoSegment(seg.duration, start, seg.uri))
-                start += seg.duration
-            });
-            file.duration = start
+                let start = 0
+                parser.manifest.segments.forEach(seg => {
+                    file.files.push(new VideoSegment(seg.duration, start, seg.uri))
+                    start += seg.duration
+                });
+                file.duration = start
+            })
         }
     }
+
+    await Promise.all(promises.map(p => p()))
 
     return { hd, uhd }
 }
 
 // const formatVideo = async (master: string): Promise<VideoFile> => {
 
-    
+
 // }
 
 const search = async (keyword: string, page: number = 1)
-    : Promise<{ videos: Hentai[], lastPage: number, total: number}> => {
+    : Promise<{ videos: Hentai[], lastPage: number, total: number }> => {
     let url = `https://search.htv-services.com`
     let params = {
         "search_text": keyword,
