@@ -17,7 +17,8 @@
                 "*",
                 "src/types/*"
             ]
-        }
+        },
+        "resolveJsonModule": true
     },
     "ts-node": {
         "esm": true
