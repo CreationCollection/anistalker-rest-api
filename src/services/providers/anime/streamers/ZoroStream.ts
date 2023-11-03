@@ -59,7 +59,7 @@ export class ZoroStream {
         let dublist: AnimeServer[] = []
         let servers = new AnimeEpisodeServers(sublist, dublist)
 
-        if (!result) return servers
+        if (!result || !result.data.html) return servers
 
         let $ = load(result.data.html)
         $('.server-item').each((_, item) => {
