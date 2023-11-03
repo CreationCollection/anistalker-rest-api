@@ -185,4 +185,40 @@ export class ZoroInformer {
 
         return anime
     }
+
+    static async getImageList(malId: number): Promise<string[]> {
+        let link = `https://api.jikan.moe/v4/anime/${malId}/pictures`
+        let list: string[] = []
+
+        try {
+            let response: AxiosResponse | null = null;
+
+            try {
+                response = await axios.get(link)
+            } catch (err: any) {
+                if (err.response.status == 404) {
+                    throw AniError.buildWithMessage(AniErrorCode.NOT_FOUND, "Page not found");
+                } else if (Math.floor(err.response.status / 100) !== 2) {
+                    throw AniError.build(AniErrorCode.UNKNOWN);
+                }
+            }
+
+            if (!response) return list;
+
+            let json = await response.data
+
+            json.data.forEach((obj: any) => {
+                list.push(obj.jpg.image_url)
+            });
+        } catch (error) {
+            if (error instanceof Error) {
+                throw error.stack
+            }
+            else {
+                console.log(error)
+            }
+        }
+
+        return list
+    }
 }

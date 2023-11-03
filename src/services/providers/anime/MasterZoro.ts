@@ -13,6 +13,7 @@ export class MasterZoro {
     static getAnimeByCategory(category: AnimeCategory): IAnimePage { return ZoroSearch.getAnimeByCategory(category) }
 
     static getAnimeInfo = async (id: number): Promise<AnimeFull> => ZoroInformer.extractAnimeInfo(id)
+    static getAnimeImages = async (malId: number): Promise<string[]> => ZoroInformer.getImageList(malId)
 
     static getEpisodes = async (animeId: number): Promise<AnimeEpisodeDetail[]> => ZoroStream.getEpisodes(animeId)
     static getEpisodeServers = async (episodeId: number): Promise<AnimeEpisodeServers> => ZoroStream.getServersForEpisode(episodeId)

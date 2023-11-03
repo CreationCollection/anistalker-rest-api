@@ -35,6 +35,8 @@ route.get('/spotlight', controller.getSpotlightAnime)
 
 route.get('/:animeId', controller.animeInfo)
 
+route.get('/images/:malId', controller.animeImages)
+
 route.get('/:animeId/episodes', controller.animeEpisodes)
 
 route.get('/episode/:epId/servers', controller.animeEpisodeServers)

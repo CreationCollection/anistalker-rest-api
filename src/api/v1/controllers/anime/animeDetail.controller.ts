@@ -36,6 +36,17 @@ export const animeInfo = async (req: Request, res: Response) => {
     }
 }
 
+// anime/images/:malId
+export const animeImages = async (req: Request, res: Response) => {
+    let malId = req.params.malId
+    if (checkId(malId, res, IllAnimeIdMsg)) {
+        safeExecute(async () => {
+            let data = await MasterZoro.getAnimeImages(parseInt(malId))
+            res.json({ status: 200, data })
+        }, res)
+    }
+}
+
 export const animeEpisodes = async (req: Request, res: Response) => {
     let animeId = req.params.animeId
     if (checkId(animeId, res, IllEpisodeIdMsg)) {
