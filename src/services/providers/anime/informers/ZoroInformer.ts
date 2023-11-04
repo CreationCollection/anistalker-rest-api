@@ -1,7 +1,9 @@
-import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 import cheerio from 'cheerio';
 import { Anime, AnimeFull, AnimeRelations, AnimeSeason, AnimeStatus, AnimeType, parseDuration } from '../../../models/AnimeModels.js';
 import { AniError, AniErrorCode } from '../../../../aniutils/AniError.js';
+import { data } from 'node_modules/cheerio/lib/api/attributes.js';
+import { title } from 'process';
 
 export class ZoroInformer {
     private static months: string[] = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -184,6 +186,64 @@ export class ZoroInformer {
         }
 
         return anime
+    }
+
+    static async verifyAnimeId(id: number): Promise<boolean> {
+        if (id < 1) return false
+        try {
+            let response = await axios.get(`https://aniwatch.to/anime-${id}`)
+            if (response.status == 200)
+                return true
+        } catch (error) {
+        }
+        return false
+    }
+
+    static async filterOutAnimeName(aniId: number): Promise<string | null> {
+        try {
+            const query = `
+                query($id: Int = ${aniId}) {
+                    Media(type: ANIME, id:$id) {
+                        relations {
+                            nodes {
+                                title { english }
+                            }
+                        }
+                    }
+                }
+            `
+            const res = await axios.post("https://graphql.anilist.co", { query })
+            const nodes = res.data.data.Media.relations.nodes
+
+            let common = nodes[0].title.english?.toLowerCase()
+            nodes.forEach((node: any) => {
+                const name = node.title.english?.toLowerCase()
+                if (name) {
+                    if (common == null || common.length == 0) common = name
+                    let result = ''
+                    const minLen = Math.min(common.length, name.length)
+                    for (let i = 0; i < minLen; i++) {
+                        if (common[i] == name[i]) {
+                            result += common[i]
+                        }
+                        else break
+                    }
+                    if (result.length > 0) common = result
+                }
+            });
+
+            return common
+        }
+        catch (err: any) {
+            if (err instanceof AxiosError) {
+                console.log(err.response?.data)
+            } 
+            else {
+                console.log(err)
+            }
+        }
+
+        return null
     }
 
     static async getImageList(malId: number): Promise<string[]> {
