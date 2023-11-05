@@ -18,7 +18,8 @@
                 "src/types/*"
             ]
         },
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "skipLibCheck": true
     },
     "ts-node": {
         "esm": true
