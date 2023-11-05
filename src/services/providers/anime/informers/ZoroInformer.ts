@@ -75,7 +75,7 @@ export class ZoroInformer {
             let $ = cheerio.load(response.data);
             let content = $("#ani_detail .anis-content");
 
-            anime.coverImage = content.find(".anisc-poster > .film-poster > img").attr("src") || '';
+            anime.image = content.find(".anisc-poster > .film-poster > img").attr("src") || '';
             let rate = content.find(".anisc-poster > .film-poster > .tick-rate");
             if (rate.length > 0) {
                 anime.isAdult = true;
