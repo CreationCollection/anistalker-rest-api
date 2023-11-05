@@ -30,6 +30,9 @@ export class WatchlistDatabase {
 
             return watchlist
         }
+        else {
+            this.handleError(userId, null, null)
+        }
         return null
     }
 
@@ -54,6 +57,9 @@ export class WatchlistDatabase {
             await userRef.child(watchId.toString()).set(true)
 
             return watchlist
+        }
+        else {
+            this.handleError(userId, null, watchlist)
         }
         return null
     }
@@ -81,6 +87,9 @@ export class WatchlistDatabase {
                 return true
             }
         }
+        else {
+            this.handleError(userId, null, watchlist)
+        }
         return false
     }
 
@@ -106,6 +115,9 @@ export class WatchlistDatabase {
                 ])
                 return watchlist
             }
+        }
+        else {
+            this.handleError(userId, null, watchlist)
         }
         return null
     }
@@ -133,7 +145,14 @@ export class WatchlistDatabase {
                     await watchlistRef.set(username)
                     return true
                 }
+                else throw new Error('Anime Already Exists!')
             }
+            else {
+                throw new Error('Either you are not the owner or watclist is not public')
+            }
+        }
+        else {
+            this.handleError(userId, validAnime, watchlist)
         }
         return false
     }
@@ -165,6 +184,9 @@ export class WatchlistDatabase {
                 }
             }
         }
+        else {
+            this.handleError(userId, validAnime, watchlist)
+        }
         return false
     }
 
@@ -193,6 +215,9 @@ export class WatchlistDatabase {
 
             return (await watchlistRef.get()).val()
         }
+        else {
+            this.handleError(userId, null, watchlist)
+        }
         return null
     }
 
@@ -201,7 +226,9 @@ export class WatchlistDatabase {
         if (watchKey) {
             return "https://demoLink.firebase.app/watch?key=" + watchKey
         }
-        return null
+        else {
+            throw new Error('Invalid WatchId')
+        }
     }
 
     static extractWatchId = async (watchUrl: string): Promise<number | null> => {
@@ -223,7 +250,7 @@ export class WatchlistDatabase {
         if (watchlist) {
             const watchLinkRef = AniDatabase.database.ref('watchlist_links')
             const existingKey = await watchLinkRef.orderByValue().equalTo(watchId).get()
-            
+
             if (existingKey.exists()) {
                 return Object.keys(existingKey.val())[0]
             }
@@ -253,7 +280,7 @@ export class WatchlistDatabase {
     static getAllWatchList = async (token: string, type: 'active' | 'archive'): Promise<any[]> => {
         const list: any[] = []
         const watchIds = await this.getWatchlistIds(token, type)
-        
+
         let count = 0
         let activeTask = 0
         const taskList: Promise<any>[] = []
@@ -285,7 +312,25 @@ export class WatchlistDatabase {
                 })
             }
         }
+        else {
+            this.handleError(userId, null, null)
+        }
 
         return list
+    }
+
+    private static handleError(userId: string | null, validAnime: boolean | null, watchlist: any | null) {
+        if (!userId) {
+            throw new Error('Invalid Token')
+        }
+        else if (validAnime != null && !validAnime) {
+            throw new Error('Invalid AnimeId')
+        }
+        else if (!watchlist) {
+            throw new Error('Invalid WatchId')
+        }
+        else if (watchlist.archive) {
+            throw new Error('Watchlist is archive cannot be editeable!')
+        }
     }
 }
