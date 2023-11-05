@@ -6,17 +6,19 @@ export async function safeExecute(exec: () => Promise<any>, res: Response) {
     }
     catch (err: any) {
         if (err instanceof Error) {
+            res.status(400).json({
+                status: 400,
+                data: {},
+                error: err.message
+            });
+            console.log(err.message)
+        } else {
             res.status(501).json({
                 status: 501,
                 data: {},
-                error: [err.message]
-            });
-        } else {
-            res.status(500).json({
-                status: 500,
-                data: {},
                 error: ["Internal Server Error"],
             });
+            console.log(err)
         }
     }
 }
