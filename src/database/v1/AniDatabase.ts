@@ -24,13 +24,32 @@ export class AniDatabase {
         }
     }
 
-    static async createSyncReport(id: number, data: any): Promise<any> {
-        const syncRef = this.database.ref(`syncReport/${id}`)
-        await syncRef.set(data)
+    static async createSyncReport(token: string, id: number, data: any): Promise<any> {
+        const userId = await AniAuth.getUserId(token)
+        if (userId) {
+            const syncRef = this.database.ref(`users/${userId}/syncReport/${id}`)
+            await syncRef.set(data)
+        }
+        else return null
     }
 
-    static async sync(id: number): Promise<any> {
-        const syncReport = this.database.ref(`syncReport/${id}`)
-        return await syncReport.get()
+    static async sync(token: string, id: number): Promise<any> {
+        const userId = await AniAuth.getUserId(token)
+        if (userId) {
+            const syncReport = this.database.ref(`users/${userId}/syncReport/${id}`)
+            const data = await syncReport.get()
+            await syncReport.remove()
+            return data
+        }
+        else return null
+    }
+
+    static async getAllSyncReports(token: string): Promise<any> {
+        const userId = await AniAuth.getUserId(token)
+        if (userId) {
+            const syncRef = this.database.ref(`users/${userId}/syncReport`)
+            return await syncRef.get()
+        }
+        return null
     }
 }
