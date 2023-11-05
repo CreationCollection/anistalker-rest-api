@@ -21,8 +21,12 @@
   },
   "homepage": "https://github.com/CreationCollection/anistalker-rest-api#readme",
   "dependencies": {
+    "@types/body-parser": "^1.19.4",
+    "@types/cors": "^2.8.15",
     "axios": "^1.5.0",
+    "body-parser": "^1.20.2",
     "cheerio": "^1.0.0-rc.12",
+    "cors": "^2.8.5",
     "crypto-js": "^4.1.1",
     "express": "^4.18.2",
     "firebase-admin": "^11.11.0",
