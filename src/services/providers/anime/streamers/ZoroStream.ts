@@ -91,12 +91,15 @@ export class ZoroStream {
     }
 
     static getVideoData = async (serverid: number, seperateFiles: boolean = false): Promise<ZoroStreamData> => {
-        let data: ZoroStreamData
+        let data: ZoroStreamData = new ZoroStreamData()
         try {
+            throw new Error()
             data = await RapidCloud.extract(await this.getServerUrl(serverid), seperateFiles)
         }
         catch (err: any) {
-            data = new ZoroStreamData(await formatVideo("https://www028.anifastcdn.info/videos/hls/5O8U3jMmppc-EjXh_Ap98w/1699517144/88527/395c00c8e81e269aa76202288b5c4727/ep.123.1677676731.m3u8", seperateFiles))
+            const result = await axios.get('https://api.consumet.org/anime/gogoanime/watch/kagejitsu-second-episode-6')
+            const master = result.data.sources[result.data.sources.length - 1].url
+            data = new ZoroStreamData(await formatVideo(master, seperateFiles))
         }
         return data
     }
