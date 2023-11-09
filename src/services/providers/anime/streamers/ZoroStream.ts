@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import { AnimeEpisode, AnimeEpisodeDetail, AnimeEpisodeServers, AnimeServer, ZoroServers, ZoroStreamData } from "../../../models/AnimeModels.js";
 import { RapidCloud } from "./RapidCloud.js"
 import { load } from "cheerio";
+import { formatVideo } from "../../../../aniutils/M3U8Util.js";
 
 
 export class ZoroStream {
@@ -90,6 +91,13 @@ export class ZoroStream {
     }
 
     static getVideoData = async (serverid: number, seperateFiles: boolean = false): Promise<ZoroStreamData> => {
-        return RapidCloud.extract(await this.getServerUrl(serverid), seperateFiles)
+        let data: ZoroStreamData
+        try {
+            data = await RapidCloud.extract(await this.getServerUrl(serverid), seperateFiles)
+        }
+        catch (err: any) {
+            data = new ZoroStreamData(await formatVideo("https://www028.anifastcdn.info/videos/hls/5O8U3jMmppc-EjXh_Ap98w/1699517144/88527/395c00c8e81e269aa76202288b5c4727/ep.123.1677676731.m3u8", seperateFiles))
+        }
+        return data
     }
 }
