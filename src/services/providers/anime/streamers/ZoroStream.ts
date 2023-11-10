@@ -97,7 +97,7 @@ export class ZoroStream {
             data = await RapidCloud.extract(await this.getServerUrl(serverid), seperateFiles)
         }
         catch (err: any) {
-            const result = await axios.get('https://api.consumet.org/anime/gogoanime/watch/one-piece-episode-1083')
+            const result = await axios.get('https://api.consumet.org/anime/gogoanime/watch/one-piece-episode-1082')
             const master = result.data.sources[result.data.sources.length - 1].url
             data = new ZoroStreamData(await formatVideo(master, seperateFiles))
         }
