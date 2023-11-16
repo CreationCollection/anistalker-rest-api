@@ -38,7 +38,7 @@ export class RapidCloud {
             // decryptKey = load(decryptKey)("textarea#read-only-cursor-text-area").text()
 
             if (!decryptKey) {
-                decryptKey = (await axios.get('https://raw.githubusercontent.com/enimax-anime/key/e6/key.txt', { responseType: 'json' })).data;
+                decryptKey = (await axios.get('https://raw.githubusercontent.com/theonlymo/keys/e1/key', { responseType: 'json' })).data;
             }
 
             let file = ''
