@@ -50,11 +50,22 @@ export class RapidCloud {
                     const sourcesArray = sources.split('');
                     let extractedKey = '';
 
+                    // for (const index of decryptKey) {
+                    //     for (let i = index[0]; i < index[1]; i++) {
+                    //         extractedKey += sources[i];
+                    //         sourcesArray[i] = '';
+                    //     }
+                    // }
+
+                    let currentIndex = 0;
                     for (const index of decryptKey) {
-                        for (let i = index[0]; i < index[1]; i++) {
-                            extractedKey += sources[i];
+                        const start = index[0] + currentIndex;
+                        const end = start + index[1];
+                        for (let i = start; i < end; i++) {
+                            extractedKey += res.data.sources[i];
                             sourcesArray[i] = '';
                         }
+                        currentIndex += index[1];
                     }
 
                     decryptKey = extractedKey;
