@@ -5,8 +5,6 @@ import cors from "cors"
 import animeRoute from "./api/v1/routes/anime.route.js"
 import mangaRoute from "./api/v1/routes/manga.route.js"
 import hentaiRoute from "./api/v1/routes/hentai.route.js"
-import { databaseRoute } from "./api/v1/routes/database.route.js"
-import { AniDatabase } from "./database/v1/AniDatabase.js"
 
 
 
@@ -27,14 +25,11 @@ app.use('/manga', mangaRoute)
 
 app.use('/hentai', hentaiRoute)
 
-app.use('/database', databaseRoute)
-
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
 })
 
 app.on('close', () => {
     console.log("Ended!")
-    AniDatabase.disposeDatabase()
 })
 
