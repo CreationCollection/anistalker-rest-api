@@ -3,8 +3,8 @@ import bodyParser from "body-parser"
 import cors from "cors"
 
 import animeRoute from "./api/v1/routes/anime.route.js"
-import mangaRoute from "./api/v1/routes/manga.route.js"
-import hentaiRoute from "./api/v1/routes/hentai.route.js"
+// import mangaRoute from "./api/v1/routes/manga.route.js"
+// import hentaiRoute from "./api/v1/routes/hentai.route.js"
 
 
 
@@ -21,9 +21,9 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use('/anime', animeRoute.route)
 
-app.use('/manga', mangaRoute)
+// app.use('/manga', mangaRoute)
 
-app.use('/hentai', hentaiRoute)
+// app.use('/hentai', hentaiRoute)
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)

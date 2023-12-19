@@ -3,7 +3,7 @@ import express, { Request, Response, query } from "express";
 import { MasterZoro } from "../../../../services/providers/anime/MasterZoro.js"
 import { safeExecute } from "../../../utils/safeUtils.js";
 import { AnimeServer, ZoroServers } from "../../../../services/models/AnimeModels.js";
-import axios from "axios";
+// import axios from "axios";
 
 const IllAnimeIdMsg = "Invalid anime Id, id should be an interger"
 const IllEpisodeIdMsg = "Invalid episode Id, id should be an interger"
