@@ -43,6 +43,8 @@ route.get('/episode/:epId/servers', controller.animeEpisodeServers)
 
 route.get('/episode/:epId/video', controller.animeEpisodeVideo)
 
+route.get('/:zoroId/video/:episode', controller.animeVideo)
+
 route.use((req: Request, res: Response) => {
     res.statusCode = 404
     res.statusMessage = "you are lost"

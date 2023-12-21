@@ -116,3 +116,22 @@ export const animeEpisodeVideo = async (req: Request, res: Response) => {
         }, res)
     }
 }
+
+// /:zoroId/video/:episode?seperatedFiles=true&track=dub
+export async function animeVideo(req: Request, res: Response) {
+    let zoroId = req.params.zoroId
+    if (checkId(zoroId, res, IllAnimeIdMsg)) {
+        safeExecute(async () => {
+            let seperatedFiles = req.query.sf == 'true'
+            let track: 'sub' | 'dub' =
+                req.query.track == 'dub' || req.query.track == 'dub' ? req.query.track : 'sub'
+            let data = await MasterZoro.getEpisodeVideoLinks(
+                parseInt(zoroId), 
+                parseInt(req.params.episode), 
+                track, 
+                seperatedFiles
+            )
+            res.json({ status: 200, data })
+        }, res)
+    }
+}
