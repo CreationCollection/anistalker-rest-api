@@ -1,30 +1,40 @@
 import axios, { AxiosError } from "axios";
 import { load } from "cheerio";
+import { search } from "src/api/v1/controllers/anime/searchAndFilter.controller.js";
 
 export class GogoInformer {
     static async mapAnilistToGogo(
         data: any,
-        narrowSearch: boolean = true,
+        pass: number = 0,
     ): Promise<{ sub: string | null, dub: string | null } | null> {
+        console.log("\nPASS: " + pass, data.year)
         try {
             const result = {
                 sub: null as null | string,
                 dub: null as null | string
             }
 
-            const relatedTitles: string[] = Object.values(data.relations)
-                .flat()
-                .filter(item => item) as string[]
-            relatedTitles.push(data.title.native)
-            if (!narrowSearch) relatedTitles.push(
-                ...data.synonyms.filter((i: string) => /^[a-zA-Z\s]+$/.test(i))
-            )
+            let names: string[] = []
 
-            console.log(relatedTitles)
+            if (pass == 0 || pass == 1) {
+                names = Object.values(data.relations)
+                    .flat()
+                    .filter(item => item) as string[]
+                names.push(data.title.native)
+            }
+            
+            if (pass == 1) {
+                names.push(...data.synonyms.filter((i: string) => /^[a-zA-Z\s]+$/.test(i)))
+            }
 
-            if (relatedTitles.length == 0) return null
+            if (pass == 2 || names.length == 0) {
+                names.push(data.title.userPreferred || data.title.english)
+            }
 
-            const searchName = findCommonName(relatedTitles)
+            names = names.filter(i => i)
+            let searchName = findCommonName(names) || data.title.userPreferred || data.title.english
+            if (pass == 3 && searchName) searchName = searchName.split('  ')[0]
+            
             console.log(searchName)
 
             let item: any | null = null
@@ -32,7 +42,6 @@ export class GogoInformer {
             let currentPage = 1
 
             const candies: any[] = []
-
             do {
                 console.log("Page: " + (currentPage))
                 const response = await axios.get(
@@ -53,7 +62,6 @@ export class GogoInformer {
 
             for (let i = 0; i < subs.length; i++) {
                 const d = await this.getGogoDetails(subs[i].id);
-                console.log(d);
                 if (this.matchDetails(d, data)) {
                     result.sub = subs[i].id
                     break
@@ -65,7 +73,6 @@ export class GogoInformer {
                 if (!result.dub) {
                     for (let i = 0; i < dubs.length; i++) {
                         const d = await this.getGogoDetails(dubs[i].id)
-                        console.log(d)
                         if (this.matchDetails(d, data)) {
                             result.dub = dubs[i].id
                             break
@@ -74,9 +81,8 @@ export class GogoInformer {
                 }
             }
 
-            return result.sub == null && result.dub == null && narrowSearch ?
-                this.mapAnilistToGogo(data, false) :
-                result
+            if (result.sub == null && pass < 3) return this.mapAnilistToGogo(data, pass + 1)
+            else return result
         }
         catch (err) {
             if (err instanceof AxiosError) {
@@ -193,6 +199,7 @@ function findCommonName(names: string[]): string {
 }
 
 function getMinLength(values: string[]): number {
+    if (values.length == 0) return 0
     let length = values[0].length
     for (let i = 1; i < values.length; i++) {
         length = Math.min(length, values[i].length)
