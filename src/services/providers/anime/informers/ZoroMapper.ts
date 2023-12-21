@@ -39,11 +39,11 @@ export class ZoroMapper {
     }
 
     private static async findMapping(zoroId: number, map: ZoroMap) {
-        console.log(zoroId)
         const anime = await MasterZoro.getAnimeInfo(zoroId)
-        map.anilistId = anime.id.aniId
+        console.log(anime.id)
+        map.anilistId = anime.id.aniId || anime.id.malId
 
-        const anilistInfo = await AnilistInformer.getAnilistInfo(map.anilistId)
+        const anilistInfo = await AnilistInformer.getAnilistInfo(map.anilistId, anime.id.aniId == 0)
         const gogoId = await GogoInformer.mapAnilistToGogo(anilistInfo)
 
         map.gogoSub = gogoId?.sub ?? null
