@@ -1,17 +1,18 @@
 import axios from "axios";
 
 export class AnilistInformer {
-    static async getAnilistInfo(anilistId: number): Promise<any> {
+    static async getAnilistInfo(id: number, isMalId: boolean = false): Promise<any> {
         const response = await axios.post(
             "https://graphql.anilist.co",
             {
                 query: `
                 query {
-                    Media(id: ${anilistId}) {
+                    Media(${isMalId ? 'idMal' : 'id'}: ${id}) {
+                        id
                         title { english userPreferred }
                         synonyms
                         season
-                        seasonYear
+                        startDate { year }
                         format
                         status
                         relations {
@@ -27,13 +28,14 @@ export class AnilistInformer {
 
         const data = response.data.data.Media
         return {
+            id: data.id,
             title: {
                 english: data.title.english,
                 native: data.title.userPreferred
             },
             synonyms: data.synonyms,
             season: data.season,
-            year: data.seasonYear,
+            year: data.startDate.year,
             format: data.format,
             status: data.status,
             relations: data.relations.nodes.reduce((groups: any, item: any) => {
@@ -46,7 +48,7 @@ export class AnilistInformer {
                 ) return groups
 
                 if (!groups[item.format]) groups[item.format] = []
-                groups[item.format].push(item.title.userPreferred)
+                groups[item.format].push(item.title.userPreferred || item.title.english)
                 return groups
             }, {}),
         }
