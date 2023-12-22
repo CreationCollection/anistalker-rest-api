@@ -3,6 +3,7 @@ import { load } from "cheerio";
 import { ZoroMapper } from '../informers/ZoroMapper.js'
 import { GogoCdn } from "./GogoCdn.js";
 import { Video } from "../../../models/VideoModels.js";
+import { AniError, AniErrorCode } from "src/aniutils/AniError.js";
 
 export class GogoStream {
     static readonly baseUrl = 'https://gogoanime3.net'
@@ -17,7 +18,7 @@ export class GogoStream {
         const map = await ZoroMapper.mapZoro(zoroId)
         const animeId = lang == 'sub' ? map.gogoSub : map.gogoDub
 
-        if (animeId.media == null) throw new Error("No Anime Found for ID: " + zoroId)
+        if (animeId.media == null) throw new AniError(AniErrorCode.NOT_FOUND, "Mapping Not Found!")
         const videoUrl = await this.getStreamUrl(animeId.media, episode)
 
         if (videoUrl == null) throw new Error('No Source found for episode ' + episode)

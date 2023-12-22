@@ -41,6 +41,8 @@ export class ZoroMapper {
     }
 
     private static async findMapping(zoroId: number, map: ZoroMap) {
+        console.log(`Mapping zoroId: "${zoroId}" to gogoId...`)
+
         const anime = await MasterZoro.getAnimeInfo(zoroId)
         console.log(anime.id)
         map.anilistId = anime.id.aniId || anime.id.malId
@@ -50,5 +52,9 @@ export class ZoroMapper {
 
         map.gogoSub = gogoId.sub
         map.gogoDub = gogoId.dub
+
+        if (gogoId.sub != null) 
+            console.log(`Found GogoId for zoroId: ${zoroId}`, gogoId)
+        else console.log(`Unable to map ZoroId: ${zoroId} to GogoAnimeId. No Match Found!`)
     }
 }

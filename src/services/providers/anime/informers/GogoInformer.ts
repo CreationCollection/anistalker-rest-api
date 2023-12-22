@@ -18,9 +18,7 @@ export class GogoInformer {
         data: any,
         pass: number = 0,
     ): Promise<GogoId> {
-        console.log("\nPASS: " + pass, data.year)
         const result = new GogoId()
-
         let names: string[] = []
 
         if (pass == 0 || pass == 1) {
@@ -42,7 +40,7 @@ export class GogoInformer {
         let searchName = findCommonName(names) || data.title.userPreferred || data.title.english
         if (pass == 3 && searchName) searchName = searchName.split('  ')[0]
 
-        console.log(searchName)
+        console.log(`PASS ${pass + 1} of searching Gogoanime for anilistId: "${data.id}" with search name "${searchName}"`)
 
         let item: any | null = null
         let hasNextPage = false
@@ -91,9 +89,7 @@ export class GogoInformer {
             }
         }
 
-        console.log(result)
-
-        if (result.sub == null && pass < 3) return this.mapAnilistToGogo(data, pass + 1)
+        if (result.sub.id == null && pass < 3) return this.mapAnilistToGogo(data, pass + 1)
         else return result
     }
 
@@ -181,7 +177,7 @@ export class GogoInformer {
     }
 
     private static matchDetails = (gogo: any, anilist: any): boolean =>
-        gogo.type == anilist.format &&
+        (gogo.type == anilist.format.replace('_SHORT', '')) &&
         gogo.status == anilist.status &&
         (gogo.season == null || gogo.season == anilist.season)
 }
