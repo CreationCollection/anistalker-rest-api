@@ -1,3 +1,4 @@
+import { AxiosError } from "axios";
 import { Response } from "express"
 
 export async function safeExecute(exec: () => Promise<any>, res: Response) {
@@ -5,16 +6,16 @@ export async function safeExecute(exec: () => Promise<any>, res: Response) {
         await exec()
     }
     catch (err: any) {
-        if (err instanceof Error) {
-            res.status(400).json({
+        if (err instanceof AxiosError) {
+            res.status(err.status || 500).json({
                 status: 400,
                 data: {},
                 error: err.message
             });
             console.log(err.message)
         } else {
-            res.status(501).json({
-                status: 501,
+            res.status(500).json({
+                status: 500,
                 data: {},
                 error: ["Internal Server Error"],
             });
