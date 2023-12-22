@@ -71,7 +71,7 @@ export class ZoroSpotlight {
         }
         catch (error) {
             if (error instanceof Error) {
-                throw new AniError(AniErrorCode.UNKNOWN, "Unknow Error", error)
+                throw new AniError(AniErrorCode.UNKNOWN, error.message ?? "Unknown Error")
             }
             else {
                 console.log(error)
