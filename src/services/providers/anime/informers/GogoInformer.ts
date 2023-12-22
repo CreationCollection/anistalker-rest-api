@@ -2,95 +2,99 @@ import axios, { AxiosError } from "axios";
 import { load } from "cheerio";
 import { search } from "src/api/v1/controllers/anime/searchAndFilter.controller.js";
 
+export class GogoId {
+    public sub: {
+        id: null | string,
+        media: null | number,
+    } = { id: null, media: null }
+    public dub: {
+        id: null | string,
+        media: null | number,
+    } = { id: null, media: null }
+}
+
 export class GogoInformer {
     static async mapAnilistToGogo(
         data: any,
         pass: number = 0,
-    ): Promise<{ sub: string | null, dub: string | null } | null> {
+    ): Promise<GogoId> {
         console.log("\nPASS: " + pass, data.year)
-        try {
-            const result = {
-                sub: null as null | string,
-                dub: null as null | string
+        const result = new GogoId()
+
+        let names: string[] = []
+
+        if (pass == 0 || pass == 1) {
+            names = Object.values(data.relations)
+                .flat()
+                .filter(item => item) as string[]
+            names.push(data.title.native)
+        }
+
+        if (pass == 1) {
+            names.push(...data.synonyms.filter((i: string) => /^[a-zA-Z\s]+$/.test(i)))
+        }
+
+        if (pass == 2 || names.length == 0) {
+            names.push(data.title.userPreferred || data.title.english)
+        }
+
+        names = names.filter(i => i)
+        let searchName = findCommonName(names) || data.title.userPreferred || data.title.english
+        if (pass == 3 && searchName) searchName = searchName.split('  ')[0]
+
+        console.log(searchName)
+
+        let item: any | null = null
+        let hasNextPage = false
+        let currentPage = 1
+
+        const candies: any[] = []
+        do {
+            console.log("Page: " + (currentPage))
+            const response = await axios.get(
+                `https://gogoanime3.net/search.html?keyword=${encodeURIComponent(searchName)}&page=${currentPage++}`
+            )
+
+            const $ = load(response.data)
+            hasNextPage = $("div.anime_name.new_series > div > div > ul > li.selected").next().length > 0
+            $("div.last_episodes > ul > li")
+                .each((_index: number, item: any) => {
+                    const d = this.parseGogoSearchItem($(item))
+                    if (d.year == data.year) candies.push(d)
+                }).get()
+        } while (item == null && hasNextPage && currentPage <= 10)
+
+        let subs = candies.filter((item: any) => item.lang == 'sub')
+        let dubs = candies.filter((item: any) => item.lang == 'dub')
+
+        for (let i = 0; i < subs.length; i++) {
+            const d = await this.getGogoDetails(subs[i].id);
+            if (this.matchDetails(d, data)) {
+                result.sub = {
+                    id: subs[i].id,
+                    media: d.media_id
+                }
+                break
             }
+        }
 
-            let names: string[] = []
-
-            if (pass == 0 || pass == 1) {
-                names = Object.values(data.relations)
-                    .flat()
-                    .filter(item => item) as string[]
-                names.push(data.title.native)
-            }
-            
-            if (pass == 1) {
-                names.push(...data.synonyms.filter((i: string) => /^[a-zA-Z\s]+$/.test(i)))
-            }
-
-            if (pass == 2 || names.length == 0) {
-                names.push(data.title.userPreferred || data.title.english)
-            }
-
-            names = names.filter(i => i)
-            let searchName = findCommonName(names) || data.title.userPreferred || data.title.english
-            if (pass == 3 && searchName) searchName = searchName.split('  ')[0]
-            
-            console.log(searchName)
-
-            let item: any | null = null
-            let hasNextPage = false
-            let currentPage = 1
-
-            const candies: any[] = []
-            do {
-                console.log("Page: " + (currentPage))
-                const response = await axios.get(
-                    `https://gogoanime3.net/search.html?keyword=${encodeURIComponent(searchName)}&page=${currentPage++}`
-                )
-
-                const $ = load(response.data)
-                hasNextPage = $("div.anime_name.new_series > div > div > ul > li.selected").next().length > 0
-                $("div.last_episodes > ul > li")
-                    .each((_index: number, item: any) => {
-                        const d = this.parseGogoSearchItem($(item))
-                        if (d.year == data.year) candies.push(d)
-                    }).get()
-            } while (item == null && hasNextPage && currentPage <= 10)
-
-            let subs = candies.filter((item: any) => item.lang == 'sub')
-            let dubs = candies.filter((item: any) => item.lang == 'dub')
-
-            for (let i = 0; i < subs.length; i++) {
-                const d = await this.getGogoDetails(subs[i].id);
+        if (result.sub != null) {
+            for (let i = 0; i < dubs.length; i++) {
+                const d = await this.getGogoDetails(dubs[i].id)
                 if (this.matchDetails(d, data)) {
-                    result.sub = subs[i].id
+                    result.dub = {
+                        id: dubs[i].id,
+                        media: d.media_id
+                    }
                     break
                 }
             }
-
-            if (result.sub != null) {
-                result.dub = dubs.filter((item: any) => (result.sub + "-dub") == item.id).pop()?.id ?? null
-                if (!result.dub) {
-                    for (let i = 0; i < dubs.length; i++) {
-                        const d = await this.getGogoDetails(dubs[i].id)
-                        if (this.matchDetails(d, data)) {
-                            result.dub = dubs[i].id
-                            break
-                        }
-                    }
-                }
-            }
-
-            if (result.sub == null && pass < 3) return this.mapAnilistToGogo(data, pass + 1)
-            else return result
         }
-        catch (err) {
-            if (err instanceof AxiosError) {
-                console.log(err.response?.data)
-            }
-            else console.log(err)
-            return null
-        }
+
+        console.log(result)
+
+        if (result.sub == null && pass < 3) return this.mapAnilistToGogo(data, pass + 1)
+        else return result
     }
 
     private static parseGogoSearchItem(item: cheerio.Cheerio): any {
@@ -115,12 +119,14 @@ export class GogoInformer {
             const result = {
                 type: "" as string,
                 status: "" as string | null,
-                season: null as string | null
+                season: null as string | null,
+                media_id: 0 as number | string,
             }
 
             const response = await axios.get("https://gogoanime3.net/category/" + id)
             const $ = load(response.data)
 
+            result.media_id = parseInt($('input#movie_id').first().val())
             const type = $("div.anime_info_body_bg > p:nth-child(4) > a").text().trim().toUpperCase()
             switch (type) {
                 case "MOVIE": {

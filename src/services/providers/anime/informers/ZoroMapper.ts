@@ -8,8 +8,9 @@ import { GogoInformer } from "./GogoInformer.js";
 export class ZoroMap {
     public zoroId: number = 0
     public anilistId: number = 0
-    public gogoSub: string | null = ''
-    public gogoDub: string | null = ''
+
+    public gogoSub: { id: string | null, media: number | null } = { id: null, media: null }
+    public gogoDub: { id: string | null, media: number | null } = { id: null, media: null }
 }
 
 export class ZoroMapper {
@@ -22,6 +23,7 @@ export class ZoroMapper {
 
         await this.findMapping(zoroId, map)
         return map
+        
         const res = await axios.get(`${this.mappingUrl}/zoro/${zoroId}`, {
             headers: { 'Authorization': this.apiKey }
         })
@@ -46,7 +48,7 @@ export class ZoroMapper {
         const anilistInfo = await AnilistInformer.getAnilistInfo(map.anilistId, anime.id.aniId == 0)
         const gogoId = await GogoInformer.mapAnilistToGogo(anilistInfo)
 
-        map.gogoSub = gogoId?.sub ?? null
-        map.gogoDub = gogoId?.dub ?? null
+        map.gogoSub = gogoId.sub
+        map.gogoDub = gogoId.dub
     }
 }
