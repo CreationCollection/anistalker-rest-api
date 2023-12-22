@@ -1,6 +1,6 @@
 import { AxiosError } from "axios";
 import { Response } from "express"
-import { AniError, AniErrorCode } from "src/aniutils/AniError.js";
+import { AniError, AniErrorCode } from "../../aniutils/AniError.js";
 
 export async function safeExecute(exec: () => Promise<any>, res: Response) {
     try {

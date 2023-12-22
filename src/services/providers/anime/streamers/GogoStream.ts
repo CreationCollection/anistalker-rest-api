@@ -3,7 +3,7 @@ import { load } from "cheerio";
 import { ZoroMapper } from '../informers/ZoroMapper.js'
 import { GogoCdn } from "./GogoCdn.js";
 import { Video } from "../../../models/VideoModels.js";
-import { AniError, AniErrorCode } from "src/aniutils/AniError.js";
+import { AniError, AniErrorCode } from "../../../../aniutils/AniError.js";
 
 export class GogoStream {
     static readonly baseUrl = 'https://gogoanime3.net'
