@@ -1,10 +1,8 @@
 export class AniError extends Error {
-    constructor(public code: AniErrorCode, public message: string, public exception: Error) {
+    constructor(public code: AniErrorCode, public message: string) {
         super(message);
         this.name = 'AniError';
-        this.stack = exception ? exception.stack : undefined;
     }
-
     static getMessage(code: AniErrorCode): string {
         switch (code) {
             case AniErrorCode.CANCELLED:
@@ -28,17 +26,17 @@ export class AniError extends Error {
 
     static build(code: AniErrorCode): AniError {
         const message = AniError.getMessage(code);
-        return new AniError(code, message, new Error(message));
+        return new AniError(code, message);
     }
 
     static buildWithMessage(code: AniErrorCode, message: string): AniError {
-        return new AniError(code, AniError.getMessage(code), new Error(message));
+        return new AniError(code, AniError.getMessage(code));
     }
 
     static buildWithException(exception: Error): AniError {
         const code = AniError.getErrorCode(exception);
         const message = AniError.getMessage(code);
-        return new AniError(code, message, exception);
+        return new AniError(code, message);
     }
 }
 
