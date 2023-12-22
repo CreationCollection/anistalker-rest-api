@@ -1,4 +1,4 @@
-import { AnimeSpotlight, AnimeType, parseDuration } from "../../../models/AnimeModels.js"
+import { AnimeSpotlight, AnimeTrending, AnimeType, parseDuration } from "../../../models/AnimeModels.js"
 import { AniError, AniErrorCode } from "../../../../aniutils/AniError.js"
 import axios, { AxiosError, AxiosResponse } from "axios"
 import { load } from "cheerio"
@@ -78,5 +78,28 @@ export class ZoroSpotlight {
             }
         }
         return animelist
+    }
+
+    static async getTrendingAnime(): Promise<AnimeTrending[]> {
+        const list: AnimeTrending[] = []
+        
+        const res = await axios.get('https://aniwatch.to/home')
+        const $ = load(res.data)
+
+        $('#trending-home .item').each((_, item) => {
+            const anime = new AnimeTrending()
+            
+            anime.id = parseInt($(item).find('.film-poster').attr('href')?.split('-')?.pop() || '0')
+            anime.rank = parseInt($(item).find('.number > span').text())
+            anime.title = {
+                english: $(item).find('.number > div').text(),
+                userPreferred: $(item).find('.number > div').attr('data-jname')
+            }
+            anime.image = $(item).find('.film-poster > img').attr('data-src') || ''
+
+            list.push(anime)
+        })
+
+        return list
     }
 }

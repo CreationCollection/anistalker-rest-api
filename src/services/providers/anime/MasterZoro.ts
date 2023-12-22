@@ -1,5 +1,5 @@
 import { Video } from "src/services/models/VideoModels.js";
-import { AnimeCategory, AnimeEpisodeDetail, AnimeEpisodeServers, AnimeFull, AnimeSpotlight, IAnimePage, ZoroStreamData } from "../../models/AnimeModels.js";
+import { AnimeCategory, AnimeEpisodeDetail, AnimeEpisodeServers, AnimeFull, AnimeSpotlight, AnimeTrending, IAnimePage, ZoroStreamData } from "../../models/AnimeModels.js";
 import { ZoroInformer } from "./informers/ZoroInformer.js";
 import { ZoroFilter, ZoroSearch } from "./informers/ZoroSearch.js";
 import { ZoroSpotlight } from "./informers/ZoroSpotlight.js"
@@ -11,6 +11,7 @@ export class MasterZoro {
     static filter(_filter: ZoroFilter): IAnimePage { return ZoroSearch.filter(_filter) }
 
     static getSpotlightAnime(): Promise<AnimeSpotlight[]> { return ZoroSpotlight.getSpotlightAnime() }
+    static getTrendingAnime(): Promise<AnimeTrending[]> { return ZoroSpotlight.getTrendingAnime() }
     static getAnimeByGenre(genre: string): IAnimePage { return ZoroSearch.getAnimeByGenre(genre) }
     static getAnimeByCategory(category: AnimeCategory): IAnimePage { return ZoroSearch.getAnimeByCategory(category) }
 

@@ -129,3 +129,10 @@ export const getSpotlightAnime = async (req: Request, res: Response) => {
         res.json({ status: 200, total: data.length, data })
     }, res)
 } 
+
+export const getTrendingAnime = async (req: Request, res: Response) => {
+    safeExecute(async () => {
+        let data = await MasterZoro.getTrendingAnime()
+        res.json({ status: 200, total: data.length, data })
+    }, res)
+}

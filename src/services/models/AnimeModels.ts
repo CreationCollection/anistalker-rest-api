@@ -58,6 +58,15 @@ export class AnimeSpotlight {
     ) { }
 }
 
+export class AnimeTrending {
+    constructor(
+        public id: number = 0,
+        public title: AnimeTitle = new AnimeTitle(),
+        public rank: number = 0,
+        public image: string = ''
+    ) { }
+}
+
 export class AnimeFull {
     constructor(
         public id: AnimeId = new AnimeId(),

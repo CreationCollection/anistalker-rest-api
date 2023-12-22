@@ -33,6 +33,8 @@ route.get('/genre/:genre', controller.searchByGenre)
 
 route.get('/spotlight', controller.getSpotlightAnime)
 
+route.get('/trending', controller.getTrendingAnime)
+
 route.get('/:animeId', controller.animeInfo)
 
 route.get('/images/:malId', controller.animeImages)
