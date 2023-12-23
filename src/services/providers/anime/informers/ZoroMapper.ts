@@ -98,10 +98,7 @@ export class ZoroMapper {
                 }
             )
         } catch (err: any) {
-            if (err instanceof AxiosError) {
-                console.log(err.response?.data ?? err.message)
-            }
-            else console.log(err)
+            
         }
     }
 
