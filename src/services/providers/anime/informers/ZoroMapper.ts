@@ -1,9 +1,10 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 import { MasterZoro } from '../MasterZoro.js'
 import { query } from "express";
 import { AnilistInformer } from "./AnilistInformer.js";
 import { GogoInformer } from "./GogoInformer.js";
+import { AniError, AniErrorCode } from "../../../../aniutils/AniError.js";
 
 export class ZoroMap {
     public zoroId: number = 0
@@ -14,30 +15,94 @@ export class ZoroMap {
 }
 
 export class ZoroMapper {
-    private static readonly mappingUrl = 'Link will be here'
+    private static readonly mappingDatabase = 'http://localhost:5000/mapping'
     private static readonly apiKey = 1309192009
 
+    private static mappingProcess = new Map()
+    private static mappingDemands = new Map()
+
     static async mapZoro(zoroId: number): Promise<ZoroMap> {
-        const map: ZoroMap = new ZoroMap()
-        map.zoroId = zoroId
+        if (!this.mappingProcess.has(zoroId)) {
+            this.mappingProcess.set(zoroId, new Promise(async (resolve, reject) => {
+                const map: ZoroMap = new ZoroMap()
+                map.zoroId = zoroId
+                try {
+                    if (!(await this.fetchMapping(zoroId, map))) {
+                        await this.findMapping(zoroId, map)
+                        if (map.gogoSub.id != null) await this.saveMapping(zoroId, map)
+                    }
+                
+                    resolve(map)
+                } 
+                catch (err: any) {
+                    reject(err)
+                }
 
-        await this.findMapping(zoroId, map)
-        return map
-        
-        const res = await axios.get(`${this.mappingUrl}/zoro/${zoroId}`, {
-            headers: { 'Authorization': this.apiKey }
-        })
-        const data = res.data
-        if (true && data.status == 1) {
-            this.findMapping(zoroId, map)
-        }
-        else {
-            map.anilistId = data.anilist
-            map.gogoSub = data.gogoSub
-            map.gogoDub = data.gogoDub
+            }))
         }
 
+        this.incrementDemand(zoroId)
+        const map = await this.mappingProcess.get(zoroId)
+        this.decrementDemand(zoroId)
         return map
+    }
+
+    private static incrementDemand(zoroId: number) {
+        this.mappingDemands.set(zoroId, (this.mappingDemands.get(zoroId) ?? 0) + 1)
+    }
+
+    private static decrementDemand(zoroId: number) {
+        this.mappingDemands.set(zoroId, (this.mappingDemands.get(zoroId) ?? 0) - 1)
+        if (this.mappingDemands.get(zoroId) == 0) setTimeout(() => {
+            if (this.mappingDemands.get(zoroId) == 0) {
+                this.mappingDemands.delete(zoroId)
+                this.mappingProcess.delete(zoroId)
+            }
+        }, 20 * 1000)
+    }
+
+    private static async fetchMapping(zoroId: number, map: ZoroMap): Promise<boolean> {
+        try {
+            const res = await axios.get(`${this.mappingDatabase}/zoro/${zoroId}`, {
+                headers: { 'Authorization': this.apiKey }
+            })
+            const data = res.data
+
+            if (data.status != 0) return false
+
+            map.gogoSub = data.data.gogoSub
+            map.gogoDub = data.data.gogoDub
+
+            console.log(`Mapping found in Database for zoroId: "${zoroId}"`, data.data)
+
+            return true
+        }
+        catch (err: any) {
+            return false
+        }
+    }
+
+    private static async saveMapping(zoroId: number, map: ZoroMap) {
+        try {
+            await axios.post(`${this.mappingDatabase}/entry`,
+                {
+                    zoroId: zoroId,
+                    map: {
+                        anilist: map.anilistId,
+                        gogoSub: map.gogoSub,
+                        gogoDub: map.gogoDub
+                    }
+                },
+                {
+                    headers: { 'Authorization': 'Bearer ' + this.apiKey, 'Content-Type': 'application/json' }
+                }
+            )
+        } catch (err: any) {
+            if (err instanceof AxiosError) {
+                console.log(err.response?.data ?? err.message)
+            }
+            else console.log(err)
+        }
     }
 
     private static async findMapping(zoroId: number, map: ZoroMap) {
@@ -53,8 +118,10 @@ export class ZoroMapper {
         map.gogoSub = gogoId.sub
         map.gogoDub = gogoId.dub
 
-        if (gogoId.sub != null) 
-            console.log(`Found GogoId for zoroId: ${zoroId}`, gogoId)
-        else console.log(`Unable to map ZoroId: ${zoroId} to GogoAnimeId. No Match Found!`)
+        if (gogoId.sub.id == null) {
+            console.log(`Unable to map ZoroId: ${zoroId} to GogoAnimeId. No Match Found!`)
+            throw new AniError(AniErrorCode.NOT_FOUND, "No Mapping Found!")
+        }
+        console.log(`Found GogoId for zoroId: ${zoroId}`, gogoId)
     }
 }

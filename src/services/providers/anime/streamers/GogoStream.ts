@@ -28,7 +28,6 @@ export class GogoStream {
 
     static async getStreamUrl(mediaId: number, episode: number): Promise<string | null> {
         const episodeId = (await axios.get(`${this.episodeAjax}?ep_start=${episode}&ep_end=${episode}&id=${mediaId}`)).data.match(/\/(.*?)(?=")/)[0]
-        console.log(this.baseUrl + episodeId)
         
         const res = await axios.get(this.baseUrl + episodeId)
         const $ = load(res.data)
