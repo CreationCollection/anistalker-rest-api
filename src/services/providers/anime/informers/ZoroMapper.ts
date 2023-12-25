@@ -15,7 +15,7 @@ export class ZoroMap {
 }
 
 export class ZoroMapper {
-    private static readonly mappingDatabase = 'http://stalk-anime-database.up.railway.app/mapping'
+    private static readonly mappingDatabase = process.env.DATABASE_SERVER || 'http://localhost:5000'
     private static readonly apiKey = 1309192009
 
     private static mappingProcess = new Map()
