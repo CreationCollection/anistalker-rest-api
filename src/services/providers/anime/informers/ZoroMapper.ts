@@ -78,6 +78,7 @@ export class ZoroMapper {
             return true
         }
         catch (err: any) {
+            console.log('problem to access database: ' + this.mappingDatabase)
             return false
         }
     }
@@ -98,7 +99,7 @@ export class ZoroMapper {
                 }
             )
         } catch (err: any) {
-            
+            console.log('mapping is not saved!')
         }
     }
 
