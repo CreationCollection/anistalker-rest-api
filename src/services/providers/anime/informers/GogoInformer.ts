@@ -78,7 +78,7 @@ export class GogoInformer {
 
         if (result.sub != null) {
             for (let i = 0; i < dubs.length; i++) {
-                const d = await this.getGogoDetails(dubs[i].id)
+                const d = await this.getGogoDetails(dubs[i].id.replace('-dub', ''))
                 if (this.matchDetails(d, data)) {
                     result.dub = {
                         id: dubs[i].id,
