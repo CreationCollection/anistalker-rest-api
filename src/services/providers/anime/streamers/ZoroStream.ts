@@ -1,7 +1,9 @@
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { AnimeEpisode, AnimeEpisodeDetail, AnimeEpisodeServers, AnimeServer, ZoroServers, ZoroStreamData } from "../../../models/AnimeModels.js";
 import { RapidCloud } from "./RapidCloud.js"
 import { load } from "cheerio";
+import { ZoroMapper } from "../informers/ZoroMapper.js";
+import { GogoStream } from "./GogoStream.js";
 
 
 export class ZoroStream {
@@ -24,7 +26,6 @@ export class ZoroStream {
 
             if (!result) return episodes
 
-            let total = result.data.totalItems
             let $ = load(result.data.html)
 
             $('.detail-infor-content > div > a').each((_, item) => {
@@ -37,6 +38,24 @@ export class ZoroStream {
                 info.isFiller = $(item).attr('class')?.includes('ssl-item-filler') || false
                 info.title = $(item).children().eq(1).children().text()
             })
+
+            try {
+                const mapping = await ZoroMapper.mapZoro(id)
+                if (mapping.gogoDub.media != null) {
+                    const dubEpisodes = await GogoStream.getEpisodeList(
+                        mapping.gogoDub.media,
+                        1, 9999
+                    )
+
+                    episodes.forEach((val: AnimeEpisodeDetail) => {
+                        val.hasDub = dubEpisodes.includes(val.episode)
+                    })
+                }
+            }
+            catch (err: any) {
+                if (err instanceof AxiosError) console.log(err.message)
+                else console.log(err)
+            }
         }
         catch (err) {
             throw err

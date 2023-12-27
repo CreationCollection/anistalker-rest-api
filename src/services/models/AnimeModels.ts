@@ -110,7 +110,8 @@ export class AnimeEpisodeDetail {
         public episode: number = 0,
         public title: string | null | undefined = null,
         public isFiller: boolean = false,
-        public url: string | null | undefined = null
+        public url: string | null | undefined = null,
+        public hasDub: boolean = false,
     ) { }
 }
 
