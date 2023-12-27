@@ -80,9 +80,10 @@ export class GogoInformer {
             for (let i = 0; i < dubs.length; i++) {
                 const d = await this.getGogoDetails(dubs[i].id.replace('-dub', ''))
                 if (this.matchDetails(d, data)) {
+                    const ad = await this.getGogoDetails(dubs[i].id)
                     result.dub = {
                         id: dubs[i].id,
-                        media: d.media_id
+                        media: ad.media_id
                     }
                     break
                 }
