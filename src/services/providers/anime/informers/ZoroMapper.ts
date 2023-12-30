@@ -27,7 +27,7 @@ export class ZoroMapper {
                 const map: ZoroMap = new ZoroMap()
                 map.zoroId = zoroId
                 try {
-                    if (!(await this.fetchMapping(zoroId, map))) {
+                    if (!(await this.fetchMapping(zoroId, map)) && map.gogoDub.id == null) {
                         await this.findMapping(zoroId, map)
                         if (map.gogoSub.id != null) await this.saveMapping(zoroId, map)
                     }
