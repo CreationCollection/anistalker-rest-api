@@ -67,7 +67,7 @@ export class GogoInformer {
 
         for (let i = 0; i < subs.length; i++) {
             const d = await this.getGogoDetails(subs[i].id);
-            if (this.matchDetails(d, data)) {
+            if (d != null && this.matchDetails(d, data)) {
                 result.sub = {
                     id: subs[i].id,
                     media: d.media_id
@@ -78,8 +78,10 @@ export class GogoInformer {
 
         if (result.sub != null) {
             for (let i = 0; i < dubs.length; i++) {
-                const d = await this.getGogoDetails(dubs[i].id.replace('-dub', ''))
-                if (this.matchDetails(d, data)) {
+                const d = 
+                    (await this.getGogoDetails(dubs[i].id.replace('-dub', ''))) ??
+                    (await this.getGogoDetails(dubs[i].id))
+                if (d != null && this.matchDetails(d, data, true)) {
                     const ad = await this.getGogoDetails(dubs[i].id)
                     result.dub = {
                         id: dubs[i].id,
@@ -171,15 +173,15 @@ export class GogoInformer {
             return result
         }
         catch (err: any) {
-            if (err instanceof AxiosError) console.log(err.response?.data)
+            if (err instanceof AxiosError) console.log(err.message)
             else console.log(err)
         }
         return null
     }
 
-    private static matchDetails = (gogo: any, anilist: any): boolean =>
+    private static matchDetails = (gogo: any, anilist: any, isDub: boolean = false): boolean =>
         (gogo.type == anilist.format.replace('_SHORT', '')) &&
-        gogo.status == anilist.status &&
+        (gogo.status == anilist.status || isDub) &&
         (gogo.season == null || gogo.season == anilist.season)
 }
 
