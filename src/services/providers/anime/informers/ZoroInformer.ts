@@ -43,9 +43,9 @@ export class ZoroInformer {
         }
 
         let format = filmDetail.find(".fd-infor > .fdi-item").eq(0).text().toLowerCase();
-        anime.type = 
+        anime.type =
             Object.entries(AnimeType)
-            .find(([_, value]) => value.toLowerCase() === format.toLowerCase())?.[1] 
+                .find(([_, value]) => value.toLowerCase() === format.toLowerCase())?.[1]
             || AnimeType.TV;
 
         let duration = filmDetail.find(".fd-infor > .fdi-item.fdi-duration").text();
@@ -54,14 +54,16 @@ export class ZoroInformer {
         return anime;
     }
 
-    static async extractAnimeInfo(id: number): Promise<AnimeFull> {
+    static async extractAnimeInfo(id: number, retry: number = 0): Promise<AnimeFull> {
         let anime: AnimeFull = new AnimeFull();
+        if (retry == 1) console.log("Using Backup site...")
 
         try {
             let response: AxiosResponse | null = null;
 
+            const baseUrl = retry == 0 ? "https://aniwatch.to" : "https://aniwatchtv.to"
             try {
-                response = await axios.get(`https://aniwatch.to/anime-${id}`)
+                response = await axios.get(`${baseUrl}/anime-${id}`)
             } catch (err: any) {
                 if (err.response.status == 404) {
                     throw AniError.buildWithMessage(AniErrorCode.NOT_FOUND, "Page not found");
@@ -74,6 +76,9 @@ export class ZoroInformer {
 
             let $ = cheerio.load(response.data);
             let content = $("#ani_detail .anis-content");
+
+            if (content.length == 0 && retry == 0) return this.extractAnimeInfo(id, 1);
+            else if (content.length == 0) throw new AniError(AniErrorCode.NOT_FOUND, "Unable to reach Zoro"); 
 
             anime.image = content.find(".anisc-poster > .film-poster > img").attr("src") || '';
             let rate = content.find(".anisc-poster > .film-poster > .tick-rate");
@@ -113,10 +118,10 @@ export class ZoroInformer {
             }
 
             let dates = item.eq(offset++).children().eq(1)
-                        .text()?.split("to")
-                        .map((x: string) => {
-                            return x.trim().replace(",", "").split(" ").filter(y => y)
-                        }) || [];
+                .text()?.split("to")
+                .map((x: string) => {
+                    return x.trim().replace(",", "").split(" ").filter(y => y)
+                }) || [];
             if (dates[0] && dates[0].length === 3) {
                 anime.start.month = this.months.indexOf(dates[0][0]);
                 anime.start.date = parseInt(dates[0][1]);
@@ -130,25 +135,25 @@ export class ZoroInformer {
 
             let season = item.eq(offset++).children().eq(1).text().split(" ")[0]
             anime.season =
-                    Object.entries(AnimeSeason).find( ([_, val]) => val.toLowerCase() == season.toLowerCase() )?.[1] || AnimeSeason.WINTER
+                Object.entries(AnimeSeason).find(([_, val]) => val.toLowerCase() == season.toLowerCase())?.[1] || AnimeSeason.WINTER
 
             let duration = item.eq(offset++).children().eq(1).text()
             anime.duration = parseDuration(duration)
 
             let status = item.eq(offset++).children().eq(1).text()?.toLowerCase();
-            anime.status = 
-                Object.entries(AnimeStatus).find( ([_, val]) => val.toLowerCase() == status.toLowerCase() )?.[1] || AnimeStatus.FINISHED
+            anime.status =
+                Object.entries(AnimeStatus).find(([_, val]) => val.toLowerCase() == status.toLowerCase())?.[1] || AnimeStatus.FINISHED
 
             anime.score = parseFloat(item.eq(offset++).children().eq(1).text() || '0');
 
             anime.genres = []
             item.eq(offset++).find('a')
-                            .each((_, x) => {
-                                let text = $(x).text();
-                                if (text.length > 0) {
-                                    anime.genres.push(text)
-                                }
-                            })
+                .each((_, x) => {
+                    let text = $(x).text();
+                    if (text.length > 0) {
+                        anime.genres.push(text)
+                    }
+                })
 
             anime.relations = []
             $(".os-list > a").each((_, el) => {
@@ -164,7 +169,7 @@ export class ZoroInformer {
                 relation.zoroId = parseInt(zoroId || '0')
                 relation.title = title
                 relation.image = image
-                
+
                 anime.relations.push(relation)
             }).get();
 
@@ -237,7 +242,7 @@ export class ZoroInformer {
         catch (err: any) {
             if (err instanceof AxiosError) {
                 console.log(err.response?.data)
-            } 
+            }
             else {
                 console.log(err)
             }
