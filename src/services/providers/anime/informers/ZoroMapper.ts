@@ -15,7 +15,7 @@ export class ZoroMap {
 }
 
 export class ZoroMapper {
-    private static readonly mappingDatabase = process.env.DATABASE_SERVER || 'http://localhost:5000'
+    private static readonly mappingDatabase = process.env.DATABASE_SERVER || 'http://localhost:5000/mapping'
     private static readonly apiKey = 1309192009
 
     private static mappingProcess = new Map()
@@ -113,8 +113,8 @@ export class ZoroMapper {
         const anilistInfo = await AnilistInformer.getAnilistInfo(map.anilistId, anime.id.aniId == 0)
         const gogoId = await GogoInformer.mapAnilistToGogo(anilistInfo)
 
-        map.gogoSub = gogoId.sub
-        map.gogoDub = gogoId.dub
+        map.gogoSub = gogoId.sub ? gogoId.sub : map.gogoSub
+        map.gogoDub = gogoId.dub ? gogoId.dub : map.gogoDub
 
         if (gogoId.sub.id == null) {
             console.log(`Unable to map ZoroId: ${zoroId} to GogoAnimeId. No Match Found!`)
